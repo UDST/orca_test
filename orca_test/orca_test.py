@@ -11,6 +11,48 @@ TO DO
 - Read a dictionary of data specifications from a yaml file
 """
 
+def parse_characteristics(list):
+    """
+    Helper function to parse lists of characteristics. 
+    
+    Table and column characteristics need to include a mix of stand-alone strings and 
+    key-value pairs. The clearest way to pass this from yaml seems to be a list in the 
+    format ['key1', 'key2', 'key3=500']. This function parses that into [('key1', None), 
+    ('key2', None), ('key3', 500)].
+    
+    Parameters
+    ----------
+    list : list of strings, some of which contain equal signs
+    
+    Returns
+    -------
+    list : list of tuples
+    
+    """
+    tuples = []
+    for str in list:
+    
+        if '=' in str:
+            k, v = [x.strip() for x in str.split('=')]
+            
+            # Convert value to a numeric if possible
+            try:
+                f = float(v)
+                v = int(f) if int(f) == f else f
+            except:
+                pass
+                
+            # Catch 'np.nan' and convert it
+            if v == 'np.nan':
+                v = np.nan
+            
+            tuples.append((k, v))
+        else
+            tuples.append((str,))
+            
+    return tuples
+    
+
 def assert_orca_spec(o_spec):
     """
     Assert a set of orca specifications, passed in as a list of dictionaries.
@@ -57,8 +99,16 @@ def assert_table_spec(t_spec):
     table_name = t_spec['table_name']
     
     if 'characteristics' in t_spec:
-        # This could be things like 'not_registered'
-        pass
+        for item in t_spec['characteristics']:
+        
+            if item == 'registered':
+                assert_table_is_registered(table_name)
+            
+            if item == 'not_registered':
+                assert_table_not_registered(table_name)
+            
+            if item == 'can_be_generated':
+                assert_table_can_be_generated(table_name)
             
     if 'columns' in t_spec:
         for c_spec in t_spec['columns']:
@@ -84,22 +134,49 @@ def assert_column_spec(table_name, c_spec):
     
     """
     column_name, values = next(c_spec.iteritems())
+    
+    # The missing-value coding affects other assertions, so check for this first
+    missing_values = np.nan
     for item in values:
+        if 'missing_val' in item:
+            missing_values = item['missing_val']
+            assert_missing_value_coding(table_name, column_name, missing_values)
+    
+    for item in values:
+    
+        # Characteristics represented as a string
+        if isinstance(item, str):
 
-        if item == 'not_registered':
-            assert_column_not_registered(table_name, column_name)
+            if item == 'registered':
+                assert_column_is_registered(table_name, column_name)
     
-        if item == 'index':
-            assert_column_is_unique_index(table_name, column_name)
+            if item == 'not_registered':
+                assert_column_not_registered(table_name, column_name)
     
-        if item == 'numeric':
-            assert_column_is_numeric(table_name, column_name)
+            if item == 'can_be_generated':
+                assert_column_can_be_generated(table_name, column_name)
     
-        if item == 'no_missing_val':
-            assert_column_no_missing_values(table_name, column_name)
+            if item == 'index':
+                assert_column_is_unique_index(table_name, column_name)
+    
+            if item == 'numeric':
+                assert_column_is_numeric(table_name, column_name)
+                
+            if item == 'no_missing_val':
+                assert_column_no_missing_values(table_name, column_name, missing_values)
         
-        if item == 'missing_val_minus_one':
-            assert_missing_value_coding(table_name, column_name, missing_values = -1)
+        # Characteristics represented as a key-value pair
+        elif isinstance(item, dict):
+            k, v = next(item.iteritems())
+            
+            if k == 'max':
+                assert_column_max(table_name, column_name, v, missing_values)
+           
+            if k == 'min':
+                assert_column_min(table_name, column_name, v, missing_values)
+           
+            if k == 'max_portion_missing':
+                assert_column_max(table_name, column_name, missing_values, v)
     
     return
 
@@ -334,7 +411,7 @@ def strip_missing_values(series, missing_values=np.nan):
 
 def assert_missing_value_coding(table_name, column_name, missing_values):
     """
-    Asserts that a column's missing entries are coded with a particular value.
+    Asserts that a column's missing entries are all coded with a particular value.
     
     Parameters
     ----------
