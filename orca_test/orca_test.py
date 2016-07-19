@@ -7,25 +7,101 @@ TO DO
 -----
 - Instead of 'print' statements, we should log a message if a test passes, and log an
   error if a test fails
-- Move this file to its own 'orcatest' library (better name??)
 - Incorporate broadcasts and injectables
-- Pass a dictionary of data specifications to be evaluated all at once, for example:
-
-    { 'tables':
-        [ { 'name': 'table_name',
-            'exists': True,
-            'columns':
-                [ { 'name': 'col1',
-                    'exists': True,
-                    'index': True },
-                  { 'name': 'col2',
-                    'exists': False } ]
-      'injectables':
-        [ { 'name': 'cap_rate',
-            'type: 'numeric' } ] }
-
 - Read a dictionary of data specifications from a yaml file
 """
+
+def assert_orca_spec(o_spec):
+    """
+    Assert a set of orca specifications, passed in as a list of dictionaries.
+    
+    Parameters
+    ----------
+    o_spec: list
+        A list of table specifications, injectable specifications, etc.
+        
+    Returns
+    -------
+    None
+    
+    """
+    for item in o_spec:
+    
+        if 'table_name' in item:
+            assert_table_spec(item)
+            
+        if 'injectable_name' in item:
+            # Etc.
+            pass
+            
+    return
+
+
+def assert_table_spec(t_spec):
+    """
+    Assert a set of specifications for a table.
+    
+    Parameters
+    ----------
+    t_spec : dict
+        A dictionary with the following key-value pairs:
+        - 'table_name': str, required
+        - 'characteristics': list, optional
+        - 'columns': list of column specifications, optional
+        
+    Returns
+    -------
+    None
+    
+    """
+    table_name = t_spec['table_name']
+    
+    if 'characteristics' in t_spec:
+        # This could be things like 'not_registered'
+        pass
+            
+    if 'columns' in t_spec:
+        for c_spec in t_spec['columns']:
+            assert_column_spec(table_name, c_spec)
+            
+    return
+    
+
+def assert_column_spec(table_name, c_spec):
+    """
+    Assert a set of specifications for a column. 
+    
+    Parameters
+    ----------
+    table_name : str
+    c_spec : dict
+        A single key-value pair where the key is the column name and the value is a list
+        of characteristics to test for.
+    
+    Returns
+    -------
+    None
+    
+    """
+    column_name, values = next(c_spec.iteritems())
+    for item in values:
+
+        if item == 'not_registered':
+            assert_column_not_registered(table_name, column_name)
+    
+        if item == 'index':
+            assert_column_is_unique_index(table_name, column_name)
+    
+        if item == 'numeric':
+            assert_column_is_numeric(table_name, column_name)
+    
+        if item == 'no_missing_val':
+            assert_column_no_missing_values(table_name, column_name)
+        
+        if item == 'missing_val_minus_one':
+            assert_missing_value_coding(table_name, column_name, missing_values = -1)
+    
+    return
 
 
 def assert_table_is_registered(table_name):
