@@ -22,7 +22,7 @@ def parse_characteristics(list):
     
     Parameters
     ----------
-    list : list of strings, some of which contain equal signs
+    list : list of strings, some of which contain an equals sign
     
     Returns
     -------
@@ -32,7 +32,10 @@ def parse_characteristics(list):
     tuples = []
     for str in list:
     
-        if '=' in str:
+        if not '=' in str:
+            tuples.append((str, None))
+    
+        else:
             k, v = [x.strip() for x in str.split('=')]
             
             # Convert value to a numeric if possible
@@ -42,14 +45,12 @@ def parse_characteristics(list):
             except:
                 pass
                 
-            # Catch 'np.nan' and convert it
+            # Catch other non-string values
             if v == 'np.nan':
                 v = np.nan
             
             tuples.append((k, v))
-        else
-            tuples.append((str,))
-            
+        
     return tuples
     
 
@@ -134,50 +135,45 @@ def assert_column_spec(table_name, c_spec):
     
     """
     column_name, values = next(c_spec.iteritems())
+    items = parse_characteristics(values)
     
     # The missing-value coding affects other assertions, so check for this first
     missing_values = np.nan
-    for item in values:
-        if 'missing_val' in item:
-            missing_values = item['missing_val']
+    for k, v in items:
+    
+        if k == 'missing_val':
+            missing_values = v
             assert_missing_value_coding(table_name, column_name, missing_values)
-    
-    for item in values:
-    
-        # Characteristics represented as a string
-        if isinstance(item, str):
 
-            if item == 'registered':
-                assert_column_is_registered(table_name, column_name)
-    
-            if item == 'not_registered':
-                assert_column_not_registered(table_name, column_name)
-    
-            if item == 'can_be_generated':
-                assert_column_can_be_generated(table_name, column_name)
-    
-            if item == 'index':
-                assert_column_is_unique_index(table_name, column_name)
-    
-            if item == 'numeric':
-                assert_column_is_numeric(table_name, column_name)
-                
-            if item == 'no_missing_val':
-                assert_column_no_missing_values(table_name, column_name, missing_values)
-        
-        # Characteristics represented as a key-value pair
-        elif isinstance(item, dict):
-            k, v = next(item.iteritems())
+    for k, v in items:
+
+        if k == 'registered':
+            assert_column_is_registered(table_name, column_name)
+
+        if k == 'not_registered':
+            assert_column_not_registered(table_name, column_name)
+
+        if k == 'can_be_generated':
+            assert_column_can_be_generated(table_name, column_name)
+
+        if k == 'index':
+            assert_column_is_unique_index(table_name, column_name)
+
+        if k == 'numeric':
+            assert_column_is_numeric(table_name, column_name)
             
-            if k == 'max':
-                assert_column_max(table_name, column_name, v, missing_values)
-           
-            if k == 'min':
-                assert_column_min(table_name, column_name, v, missing_values)
-           
-            if k == 'max_portion_missing':
-                assert_column_max(table_name, column_name, missing_values, v)
-    
+        if k == 'no_missing_val':
+            assert_column_no_missing_values(table_name, column_name, missing_values)
+
+        if k == 'max':
+            assert_column_max(table_name, column_name, v, missing_values)
+       
+        if k == 'min':
+            assert_column_min(table_name, column_name, v, missing_values)
+       
+        if k == 'max_portion_missing':
+            assert_column_max(table_name, column_name, v, missing_values)
+
     return
 
 
@@ -500,7 +496,7 @@ def assert_column_min(table_name, column_name, min, missing_values=np.nan):
     return
 
 
-def assert_column_max_portion_missing(table_name, column_name, missing_values=np.nan, portion=0):
+def assert_column_max_portion_missing(table_name, column_name, portion, missing_values=np.nan):
     """
     Assert the maximum portion of a column's entries that may be missing.
     
@@ -508,10 +504,10 @@ def assert_column_max_portion_missing(table_name, column_name, missing_values=np
     ----------
     table_name : str
     column_name : str
-    missing_values : {0, -1, np.nan}, optional
-        Value that indicates missing entires.
     portion : float from 0 to 1
         Maximum portion of entries that may be missing.
+    missing_values : {0, -1, np.nan}, optional
+        Value that indicates missing entires.
     
     Returns
     -------
@@ -537,7 +533,7 @@ def assert_column_max_portion_missing(table_name, column_name, missing_values=np
 def assert_column_no_missing_values(table_name, column_name, missing_values=np.nan):
     """
     """
-    assert_column_max_portion_missing(table_name, column_name, missing_values, 0)
+    assert_column_max_portion_missing(table_name, column_name, 0, missing_values)
     return
 
 
