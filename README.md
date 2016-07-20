@@ -1,11 +1,17 @@
 orca_test
 =========
 
-Assertions for testing the characteristics of orca tables and columns
+Assertions for testing the characteristics of `orca` tables and columns. Two primary use cases are anticipated:
 
-#### Installation
+- 
 
-#### YAML-based table/column specifications
+
+## Installation
+
+Clone this repo and run `python septup develop`.
+
+
+## YAML-based table/column specifications
 
 You can assert an entire set of table and column specifications at once, using the following format. Characteristics are mapped to individual assertion statements, which can also be called directly (see next section). 
 
@@ -19,22 +25,35 @@ ot.assert_orca_spec(yaml.load(
   - building_id: [index]
   - residential_price: [numeric, missing_val=0, min=0]
   
-- table_name: residential_units
-  columns:
-  - unit_id: [index]
-  - unit_residential_price: [numeric, missing_val=0, min=0]
-  - unit_residential_rent: [numeric, missing_val=0, min=0]
-  - building_id: [numeric, no_missing_val]
-  
 - table_name: households
   columns:
-  - unit_id: [numeric, missing_val=-1]
-  - building_id: [numeric, missing_val=-1]
-"""))
+  - building_id: [numeric, no_missing_val]
+  - unit_id: [not_registered]
+
+- table_name: residential_units
+  characteristics: [not_registered]
+  """))
 ```
 
-#### Full API
+
+## Full API
+
+Each function maps to a keyword that can be included in a yaml specification. There are hierarchies of assertions that call each other -- for example, asserting that a column is registered will also assert that its associated table can be generated. The current API is a work in progress..
+
+- `assert_table_is_registered(table_name)`
+- `assert_table_can_be_generated(table_name)`
+- `assert_column_is_registered(column_name, table_name)`
+- `assert_column_not_registered(table_name, column_name)`
+- `assert_column_can_be_generated(table_name, column_name)`
+- `assert_column_is_unique_index(table_name, column_name)`
+- `assert_column_is_numeric(table_name, column_name)`
+- `assert_missing_value_coding(table_name, column_name, missing_values)`
+- `assert_column_max(table_name, column_name, max, missing_values=np.nan)`
+- `assert_column_min(table_name, column_name, min, missing_values=np.nan)`
+- `assert_column_max_portion_missing(table_name, column_name, portion, missing_values=np.nan)`
+- `assert_column_no_missing_values(table_name, column_name, missing_values=np.nan)`
 
 
-* 
+
+
 
