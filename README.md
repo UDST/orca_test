@@ -54,7 +54,7 @@ The current API is a work in progress.
 - `assert_table_can_be_generated(table_name)`
 
 #### Column assertions
-- `assert_column_is_registered(column_name, table_name)`
+- `assert_column_is_registered(table_name, column_name)`
 - `assert_column_not_registered(table_name, column_name)`
 - `assert_column_can_be_generated(table_name, column_name)`
 - `assert_column_is_unique_index(table_name, column_name)`
