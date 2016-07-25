@@ -143,7 +143,7 @@ def assert_column_spec(table_name, c_spec):
     
         if k == 'missing_val':
             missing_values = v
-            assert_missing_value_coding(table_name, column_name, missing_values)
+            assert_column_missing_value_coding(table_name, column_name, missing_values)
 
     for k, v in items:
 
@@ -224,7 +224,7 @@ def assert_table_can_be_generated(table_name):
     return
 
 
-def assert_column_is_registered(column_name, table_name):
+def assert_column_is_registered(table_name, column_name):
     """
     Local columns are registered when their table is evaluated, but stand-alone columns
     can be registered without being evaluated. 
@@ -405,7 +405,7 @@ def strip_missing_values(series, missing_values=np.nan):
         return series[series != missing_values].copy()
 
 
-def assert_missing_value_coding(table_name, column_name, missing_values):
+def assert_column_missing_value_coding(table_name, column_name, missing_values):
     """
     Asserts that a column's missing entries are all coded with a particular value.
     
