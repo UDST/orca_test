@@ -11,6 +11,40 @@ TO DO
 - Read a dictionary of data specifications from a yaml file
 """
 
+
+"""
+The Spec objects will store (1) characteristics, passed as named arguments, and
+(2) sub-objects, passed as unnamed arguments. We may want to specify explicitly in the 
+constructors which characteristics and sub-object types are expected, but for now we just 
+accept and store anything that's passed in (less code to change as we adjust the API).
+"""
+
+class OrcaSpec(object):
+
+    def __init__(self, name, *args):
+        self.name = name
+        self.tables = [t for t in args if isinstance(t, TableSpec)]
+
+
+class TableSpec(object):
+
+    def __init__(self, name, *args, **kwargs):
+        self.name = name
+        self.columns = [c for c in args if isinstance(c, ColumnSpec)]
+        self.properties = kwargs  # table characteristics
+
+
+class ColumnSpec(object):
+
+    def __init__(self, name, **kwargs):
+        self.name = name
+        self.properties = kwargs  # column characteristics
+        
+
+
+
+
+
 def parse_characteristics(list):
     """
     Helper function to parse lists of characteristics. 
