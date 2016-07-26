@@ -13,6 +13,10 @@ TO DO
 
 
 """
+######################
+SPEC CLASS DEFINITIONS
+######################
+
 The Spec objects will store (1) characteristics, passed as named arguments, and
 (2) sub-objects, passed as unnamed arguments. We may want to specify explicitly in the 
 constructors which characteristics and sub-object types are expected, but for now we just 
@@ -31,185 +35,152 @@ class TableSpec(object):
     def __init__(self, name, *args, **kwargs):
         self.name = name
         self.columns = [c for c in args if isinstance(c, ColumnSpec)]
-        self.properties = kwargs  # table characteristics
+        self.properties = kwargs
 
 
 class ColumnSpec(object):
 
     def __init__(self, name, **kwargs):
+        """
+        Parameters
+        ----------
+        name : str
+            Name of column
+        
+        """
         self.name = name
-        self.properties = kwargs  # column characteristics
-        
+        self.properties = kwargs
 
 
 
+"""
+#######################################
+FUNCTIONS FOR WORKING WITH SPEC OBJECTS
+#######################################
+"""
 
+def spec_from_yaml(str):
+    return
 
-def parse_characteristics(list):
-    """
-    Helper function to parse lists of characteristics. 
-    
-    Table and column characteristics need to include a mix of stand-alone strings and 
-    key-value pairs. The clearest way to pass this from yaml seems to be a list in the 
-    format ['key1', 'key2', 'key3=500']. This function parses that into [('key1', None), 
-    ('key2', None), ('key3', 500)].
-    
-    Parameters
-    ----------
-    list : list of strings, some of which contain an equals sign
-    
-    Returns
-    -------
-    list : list of tuples
-    
-    """
-    tuples = []
-    for str in list:
-    
-        if not '=' in str:
-            tuples.append((str, None))
-    
-        else:
-            k, v = [x.strip() for x in str.split('=')]
-            
-            # Convert value to a numeric if possible
-            try:
-                f = float(v)
-                v = int(f) if int(f) == f else f
-            except:
-                pass
-                
-            # Catch other non-string values
-            if v == 'np.nan':
-                v = np.nan
-            
-            tuples.append((k, v))
-        
-    return tuples
-    
 
 def assert_orca_spec(o_spec):
     """
-    Assert a set of orca specifications, passed in as a list of dictionaries.
+    Assert a set of orca data specifications.
     
     Parameters
     ----------
-    o_spec: list
-        A list of table specifications, injectable specifications, etc.
-        
+    o_spec : orca_test.OrcaSpec
+        Orca data specifications
+    
     Returns
     -------
     None
     
     """
-    for item in o_spec:
+    # Assert the properties of each table
+    for t in o_spec.tables:
+        assert_table_spec(t)
     
-        if 'table_name' in item:
-            assert_table_spec(item)
-            
-        if 'injectable_name' in item:
-            # Etc.
-            pass
-            
     return
 
 
 def assert_table_spec(t_spec):
     """
-    Assert a set of specifications for a table.
+    Assert the properties specified for a table and its columns.
     
     Parameters
     ----------
-    t_spec : dict
-        A dictionary with the following key-value pairs:
-        - 'table_name': str, required
-        - 'characteristics': list, optional
-        - 'columns': list of column specifications, optional
-        
+    t_spec : orca_test.TableSpec
+        Table specifications
+    
     Returns
     -------
     None
     
     """
-    table_name = t_spec['table_name']
+    # Translate the table's own properties into assertion statements
+    for k, v in t_spec.properties.items():
     
-    if 'characteristics' in t_spec:
-        for item in t_spec['characteristics']:
+        if (k, v) == ('registered', True):
+            assert_table_is_registered(t_spec.name)
         
-            if item == 'registered':
-                assert_table_is_registered(table_name)
-            
-            if item == 'not_registered':
-                assert_table_not_registered(table_name)
-            
-            if item == 'can_be_generated':
-                assert_table_can_be_generated(table_name)
-            
-    if 'columns' in t_spec:
-        for c_spec in t_spec['columns']:
-            assert_column_spec(table_name, c_spec)
-            
-    return
+        if (k, v) == ('registered', False):
+            assert_table_not_registered(t_spec.name)
+        
+        if (k, v) == ('can_be_generated', True):
+            assert_table_can_be_generated(t_spec.name)
     
+    # Assert the properties of each column
+    for c in t_spec.columns:
+        assert_column_spec(t_spec.name, c)
+        
+    return
+
 
 def assert_column_spec(table_name, c_spec):
     """
-    Assert a set of specifications for a column. 
+    Assert the properties specified for a column.
     
     Parameters
     ----------
     table_name : str
-    c_spec : dict
-        A single key-value pair where the key is the column name and the value is a list
-        of characteristics to test for.
+        Name of the orca table containing the column
+    c_spec : orca_test.ColumnSpec
+        Column specifications
     
     Returns
     -------
     None
     
     """
-    column_name, values = next(c_spec.iteritems())
-    items = parse_characteristics(values)
-    
     # The missing-value coding affects other assertions, so check for this first
     missing_values = np.nan
-    for k, v in items:
-    
-        if k == 'missing_val':
+    for k, v in c_spec.properties.items():
+        
+        if k == ('missing_val_coding'):
             missing_values = v
-            assert_column_missing_value_coding(table_name, column_name, missing_values)
+            assert_column_missing_value_coding(table_name, c_spec.name, missing_values)
+    
+    
+    # Translate the column's properties into assertion statements
+    for k, v in c_spec.properties.items():
+    
+        if (k, v) == ('registered', True):
+            assert_column_is_registered(table_name, c_spec.name)
 
-    for k, v in items:
+        if (k, v) == ('registered', False):
+            assert_column_not_registered(table_name, c_spec.name)
 
-        if k == 'registered':
-            assert_column_is_registered(table_name, column_name)
+        if (k, v) == ('can_be_generated', True):
+            assert_column_can_be_generated(table_name, c_spec.name)
 
-        if k == 'not_registered':
-            assert_column_not_registered(table_name, column_name)
+        if (k, v) == ('primary_key', True):
+            assert_column_is_primary_key(table_name, c_spec.name)
 
-        if k == 'can_be_generated':
-            assert_column_can_be_generated(table_name, column_name)
-
-        if k == 'index':
-            assert_column_is_unique_index(table_name, column_name)
-
-        if k == 'numeric':
-            assert_column_is_numeric(table_name, column_name)
+        if (k, v) == ('numeric', True):
+            assert_column_is_numeric(table_name, c_spec.name)
             
-        if k == 'no_missing_val':
-            assert_column_no_missing_values(table_name, column_name, missing_values)
+        if (k, v) == ('missing_val', False):
+            assert_column_no_missing_values(table_name, c_spec.name, missing_values)
 
         if k == 'max':
-            assert_column_max(table_name, column_name, v, missing_values)
+            assert_column_max(table_name, c_spec.name, v, missing_values)
        
         if k == 'min':
-            assert_column_min(table_name, column_name, v, missing_values)
+            assert_column_min(table_name, c_spec.name, v, missing_values)
        
         if k == 'max_portion_missing':
-            assert_column_max(table_name, column_name, v, missing_values)
+            assert_column_max_portion_missing(table_name, c_spec.name, v, missing_values)
 
     return
 
+
+
+"""
+###################
+ASSERTION FUNCTIONS
+###################
+"""
 
 def assert_table_is_registered(table_name):
     """
@@ -297,7 +268,7 @@ def assert_column_can_be_generated(table_name, column_name):
     possible to do this without getting a copy of the column. And not sure how caching 
     works for computed columns. 
     """
-    assert_column_is_registered(column_name, table_name)
+    assert_column_is_registered(table_name, column_name)
     t = orca.get_table(table_name)
     
     # If the requested column is the index, we have to fetch it differently
@@ -315,7 +286,7 @@ def assert_column_can_be_generated(table_name, column_name):
     return
 
 
-def assert_column_is_unique_index(table_name, column_name):
+def assert_column_is_primary_key(table_name, column_name):
     """
     Assert that column is the index of the underlying DataFrame, has no missing entires,
     and its values are unique. 
@@ -493,8 +464,8 @@ def assert_column_max(table_name, column_name, max, missing_values=np.nan):
     try:
         assert ds.max() <= max
     except:
-        print "Assertion failed: column '%s' has maximum value %s" \
-                % (column_name, str(ds.max())) + "\n"
+        print "Assertion failed: column '%s' has maximum value of %s, not %s" \
+                % (column_name, str(ds.max()), str(max)) + "\n"
         raise
     return
     
@@ -524,8 +495,8 @@ def assert_column_min(table_name, column_name, min, missing_values=np.nan):
     try:
         assert ds.min() >= min
     except:
-        print "Assertion failed: column '%s' has minimum value %s" \
-                % (column_name, str(ds.min())) + "\n"
+        print "Assertion failed: column '%s' has minimum value of %s, not %s" \
+                % (column_name, str(ds.min()), str(min)) + "\n"
         raise
     return
 
@@ -551,15 +522,17 @@ def assert_column_max_portion_missing(table_name, column_name, portion, missing_
     assert_column_can_be_generated(table_name, column_name)
     ds = get_column_or_index(table_name, column_name)
     missing = len(ds) - len(strip_missing_values(ds, missing_values))
-    
     missing_portion = float(missing) / len(ds)
-    missing_pct = round(100 * missing_portion, 1)
+    
+    # Format as percentages for output
+    missing_pct = int(round(100 * missing_portion))
+    max_pct = int(round(100 * portion))
     
     try:
         assert missing_portion <= portion
     except:
-        print "Assertion failed: column '%s' is %s%% missing" \
-                % (column_name, missing_pct) + "\n"
+        print "Assertion failed: column '%s' is %s%% missing, above limit of %s%%" \
+                % (column_name, missing_pct, max_pct) + "\n"
         raise
     return
 
