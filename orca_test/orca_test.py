@@ -243,7 +243,7 @@ def assert_column_is_registered(table_name, column_name):
     try:
         assert (column_name in t.columns) or (column_name == t.index.name)
     except:
-        msg = "Column '%s' is not registered in table '%s'" (column_name, table_name)
+        msg = "Column '%s' is not registered in table '%s'" % (column_name, table_name)
         raise OrcaAssertionError(msg)
     return
 
@@ -257,7 +257,7 @@ def assert_column_not_registered(table_name, column_name):
     try:
         assert (not column_name in t.columns) and (column_name != t.index.name)
     except:
-        msg = "Column '%s' is already registered in table '%s'" (column_name, table_name)
+        msg = "Column '%s' is already registered in table '%s'" % (column_name, table_name)
         raise OrcaAssertionError(msg)
     return
 
@@ -382,7 +382,7 @@ def assert_column_is_numeric(table_name, column_name):
     try:
         assert type in ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
     except:
-        msg = "Column '%s' has type '%s'" % (column_name, type)
+        msg = "Column '%s' has type '%s' (not numeric)" % (column_name, type)
         raise OrcaAssertionError(msg)
     return
 
