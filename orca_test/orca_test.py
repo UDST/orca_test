@@ -23,6 +23,10 @@ constructors which characteristics and sub-object types are expected, but for no
 accept and store anything that's passed in (less code to change as we adjust the API).
 """
 
+class OrcaAssertionError(Exception):
+    __module__ = Exception.__module__
+    
+
 class OrcaSpec(object):
 
     def __init__(self, name, *args):
@@ -189,8 +193,8 @@ def assert_table_is_registered(table_name):
     try:
         assert orca.is_table(table_name)
     except:
-        print "Assertion failed: table '%s' is not registered" % table_name + "\n"
-        raise
+        msg = "Table '%s' is not registered" % table_name
+        raise OrcaAssertionError(msg)
     return
 
 
@@ -200,8 +204,8 @@ def assert_table_not_registered(table_name):
     try:
         assert not orca.is_table(table_name)
     except:
-        print "Assertion failed: table '%s' is already registered" % table_name + "\n"
-        raise
+        msg = "Table '%s' is already registered" % table_name
+        raise OrcaAssertionError(msg)
     return
 
 
@@ -223,9 +227,8 @@ def assert_table_can_be_generated(table_name):
         try:
             _ = orca.get_raw_table(table_name)._call_func()
         except:
-            print "Assertion failed: table '%s' is registered but cannot be generated" \
-                    % table_name + "\n"
-            raise
+            msg = "Table '%s' is registered but cannot be generated" % table_name
+            raise OrcaAssertionError(msg)
     return
 
 
@@ -240,9 +243,8 @@ def assert_column_is_registered(table_name, column_name):
     try:
         assert (column_name in t.columns) or (column_name == t.index.name)
     except:
-        print "Assertion failed: column '%s' is not registered in table '%s'" \
-                % (column_name, table_name) + "\n"
-        raise
+        msg = "Column '%s' is not registered in table '%s'" (column_name, table_name)
+        raise OrcaAssertionError(msg)
     return
 
 
@@ -255,9 +257,8 @@ def assert_column_not_registered(table_name, column_name):
     try:
         assert (not column_name in t.columns) and (column_name != t.index.name)
     except:
-        print "Assertion failed: column '%s' is already registered in table '%s'" \
-                % (column_name, table_name) + "\n"
-        raise
+        msg = "Column '%s' is already registered in table '%s'" (column_name, table_name)
+        raise OrcaAssertionError(msg)
     return
 
 
@@ -280,9 +281,8 @@ def assert_column_can_be_generated(table_name, column_name):
         try:
             _ = t.get_column(column_name)
         except:
-            print "Assertion failed: column '%s' is registered but cannot be generated" \
-                    % column_name + "\n"
-            raise
+            msg = "Column '%s' is registered but cannot be generated" % column_name
+            raise OrcaAssertionError(msg)
     return
 
 
@@ -307,23 +307,23 @@ def assert_column_is_primary_key(table_name, column_name):
         idx = orca.get_table(table_name).index
         assert idx.name == column_name
     except:
-        print "Assertion failed: column '%s' is not set as the index of table '%s'" \
-                % (column_name, table_name) + "\n"
-        raise
+        msg = "Column '%s' is not set as the index of table '%s'" \
+                % (column_name, table_name)
+        raise OrcaAssertionError(msg)
         
     try:
         assert len(idx.unique()) == len(idx)
     except:
-        print "Assertion failed: column '%s' is the index of table '%s' but its values are not unique" \
-                % (column_name, table_name) + "\n"
-        raise
+        msg = "Column '%s' is the index of table '%s' but its values are not unique" \
+                % (column_name, table_name)
+        raise OrcaAssertionError(msg)
         
     try:
         assert sum(pd.isnull(idx)) == 0
     except:
-        print "Assertion failed: column '%s' is the index of table '%s' but it contains missing values" \
-                % (column_name, table_name) + "\n"
-        raise
+        msg = "Column '%s' is the index of table '%s' but it contains missing values" \
+                % (column_name, table_name)
+        raise OrcaAssertionError(msg)
     return
 
 
@@ -382,9 +382,8 @@ def assert_column_is_numeric(table_name, column_name):
     try:
         assert type in ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
     except:
-        print "Assertion failed: column '%s' has type '%s'" \
-                % (column_name, type) + "\n"
-        raise
+        msg = "Column '%s' has type '%s'" % (column_name, type)
+        raise OrcaAssertionError(msg)
     return
 
 
@@ -433,9 +432,9 @@ def assert_column_missing_value_coding(table_name, column_name, missing_values):
     try:
         assert sum(pd.isnull(ds)) == 0
     except:
-        print "Assertion failed: column '%s' has null entries that are not coded as %s" \
-                % (column_name, str(missing_values)) + "\n"
-        raise
+        msg = "Column '%s' has null entries that are not coded as %s" \
+                % (column_name, str(missing_values))
+        raise OrcaAssertionError(msg)
     return
 
 
@@ -464,9 +463,9 @@ def assert_column_max(table_name, column_name, max, missing_values=np.nan):
     try:
         assert ds.max() <= max
     except:
-        print "Assertion failed: column '%s' has maximum value of %s, not %s" \
-                % (column_name, str(ds.max()), str(max)) + "\n"
-        raise
+        msg = "Column '%s' has maximum value of %s, not %s" \
+                % (column_name, str(ds.max()), str(max))
+        raise OrcaAssertionError(msg)
     return
     
 
@@ -495,9 +494,9 @@ def assert_column_min(table_name, column_name, min, missing_values=np.nan):
     try:
         assert ds.min() >= min
     except:
-        print "Assertion failed: column '%s' has minimum value of %s, not %s" \
-                % (column_name, str(ds.min()), str(min)) + "\n"
-        raise
+        msg = "Column '%s' has minimum value of %s, not %s" \
+                % (column_name, str(ds.min()), str(min))
+        raise OrcaAssertionError(msg)
     return
 
 
@@ -531,9 +530,9 @@ def assert_column_max_portion_missing(table_name, column_name, portion, missing_
     try:
         assert missing_portion <= portion
     except:
-        print "Assertion failed: column '%s' is %s%% missing, above limit of %s%%" \
-                % (column_name, missing_pct, max_pct) + "\n"
-        raise
+        msg = "Column '%s' is %s%% missing, above limit of %s%%" \
+                % (column_name, missing_pct, max_pct)
+        raise OrcaAssertionError(msg)
     return
 
 
