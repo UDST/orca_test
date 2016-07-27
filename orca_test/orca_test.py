@@ -1,15 +1,11 @@
-import pandas as pd
-import numpy as np
-import orca
+# Orca_test
+# Copyright (c) 2016 UrbanSim Inc.
+# See full license in LICENSE
 
-"""
-TO DO
------
-- Instead of 'print' statements, we should log a message if a test passes, and log an
-  error if a test fails
-- Incorporate broadcasts and injectables
-- Read a dictionary of data specifications from a yaml file
-"""
+import numpy as np
+import pandas as pd
+
+import orca
 
 
 """
@@ -45,13 +41,6 @@ class TableSpec(object):
 class ColumnSpec(object):
 
     def __init__(self, name, **kwargs):
-        """
-        Parameters
-        ----------
-        name : str
-            Name of column
-        
-        """
         self.name = name
         self.properties = kwargs
 
@@ -236,6 +225,16 @@ def assert_column_is_registered(table_name, column_name):
     """
     Local columns are registered when their table is evaluated, but stand-alone columns
     can be registered without being evaluated. 
+    
+    Parameters
+    ----------
+    table_name : str
+    column_name : str
+    
+    Returns
+    -------
+    None
+    
     """
     assert_table_can_be_generated(table_name)
     t = orca.get_table(table_name)
@@ -250,6 +249,16 @@ def assert_column_is_registered(table_name, column_name):
 
 def assert_column_not_registered(table_name, column_name):
     """
+    
+    Parameters
+    ----------
+    table_name : str
+    column_name : str
+    
+    Returns
+    -------
+    None
+    
     """
     assert_table_can_be_generated(table_name)
     t = orca.get_table(table_name)
@@ -264,21 +273,33 @@ def assert_column_not_registered(table_name, column_name):
 
 def assert_column_can_be_generated(table_name, column_name):
     """
-    If it's a local column, then it's been generated already when it was registered. If 
-    it's a function returning a series, then we need to evaluate it. Does not seem to be 
-    possible to do this without getting a copy of the column. And not sure how caching 
-    works for computed columns. 
+    There are four types of columns: (1) local columns of a registered table, (2) the 
+    index of a registered table, (3) SeriesWrapper columns associated with a table, and
+    (4) ColumnFuncWrapper columns associated with a table. 
+    
+    Only the ColumnFuncWrapper columns need to be tested here, because the others already 
+    exist at the point when they're registered. 
+    
+    Parameters
+    ----------
+    table_name : str
+    column_name : str
+    
+    Returns
+    -------
+    None
+    
     """
     assert_column_is_registered(table_name, column_name)
     t = orca.get_table(table_name)
     
-    # If the requested column is the index, we have to fetch it differently
-    # (Missing index does not raise an exception: t.index.name == None)
+    # t.column_type() fails for index columns, so we have to check for them separately
     if (column_name == t.index.name):
         return
     
     elif (t.column_type(column_name) == 'function'):
         try:
+            # This seems to be the only way to trigger evaluation
             _ = t.get_column(column_name)
         except:
             msg = "Column '%s' is registered but cannot be generated" % column_name
@@ -298,7 +319,7 @@ def assert_column_is_primary_key(table_name, column_name):
     
     Returns
     -------
-    none
+    None
     
     """
     assert_column_can_be_generated(table_name, column_name)
@@ -373,7 +394,7 @@ def assert_column_is_numeric(table_name, column_name):
     
     Returns
     -------
-    none
+    None
     
     """
     assert_column_can_be_generated(table_name, column_name)
@@ -395,7 +416,7 @@ def strip_missing_values(series, missing_values=np.nan):
     ----------
     series : pandas.Series
     missing_values : {0, -1, np.nan}, optional
-        Value that indicates missing entires.
+        Value that indicates missing entries.
     
     Returns
     -------
@@ -422,7 +443,7 @@ def assert_column_missing_value_coding(table_name, column_name, missing_values):
     
     Returns
     -------
-    none
+    None
     
     """
     assert_column_can_be_generated(table_name, column_name)
@@ -453,7 +474,7 @@ def assert_column_max(table_name, column_name, max, missing_values=np.nan):
     
     Returns
     -------
-    none
+    None
     
     """
     assert_column_is_numeric(table_name, column_name)
@@ -484,7 +505,7 @@ def assert_column_min(table_name, column_name, min, missing_values=np.nan):
     
     Returns
     -------
-    none
+    None
     
     """
     assert_column_is_numeric(table_name, column_name)
@@ -515,7 +536,7 @@ def assert_column_max_portion_missing(table_name, column_name, portion, missing_
     
     Returns
     -------
-    none
+    None
     
     """
     assert_column_can_be_generated(table_name, column_name)

@@ -1,9 +1,13 @@
-"""
-This is a script for informal testing of functions as i'm working on them.
-"""
+# Orca_test
+# Copyright (c) 2016 UrbanSim Inc.
+# See full license in LICENSE
 
-import pandas as pd
+"""
+This is an informal set of tests for the various assertions.
+
+"""
 import numpy as np
+import pandas as pd
 
 import orca
 import orca_test as ot
@@ -72,10 +76,8 @@ bad_specs = [
 ]
 
 for bs in bad_specs:
-
     try:
         ot.assert_orca_spec(bs)
-    
     except OrcaAssertionError as e:
         print "OrcaAssertionError: " + str(e)
         pass
