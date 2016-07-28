@@ -47,12 +47,11 @@ ot.assert_orca_spec(o_spec)
 
 ### Working demos
 - [development_tests.py](https://github.com/urbansim/orca_test/blob/master/development_tests.py) in this repo
-- [ual.py](https://github.com/ual/bayarea_urbansim/blob/orca-test/baus/ual.py) in the `orca-test` branch of `UAL/bayarea_urbansim` 
 
 
 ## Full API
 
-There's fairly detailed documentation of individual functions in [orca_test.py](https://github.com/urbansim/orca_test/blob/master/orca_test/orca_test.py).
+There's fairly detailed documentation of individual functions in the [source code](https://github.com/urbansim/orca_test/blob/master/orca_test/orca_test.py).
 
 ### Classes
 - `OrcaSpec(name [, TableSpec objs, InjectableSpec objs])`
