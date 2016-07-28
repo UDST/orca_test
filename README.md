@@ -85,8 +85,8 @@ There's fairly detailed documentation of individual functions in [orca_test.py](
 | `primary_key = True`| `assert_column_is_primary_key(table_name, column_name)` |
 | `numeric = True`| `assert_column_is_numeric(table_name, column_name)` |
 | `missing_val_coding = {0, -1}`| `assert_column_missing_value_coding` <br> `(table_name, column_name, missing_val_coding)` |
-| `max = value`| `assert_column_max(table_name, column_name, max [, missing_val_coding])` |
-| `min = value`| `assert_column_min(table_name, column_name, min [, missing_val_coding])` |
+| `max = value`| `assert_column_max` <br> `(table_name, column_name, max [, missing_val_coding])` |
+| `min = value`| `assert_column_min` <br> `(table_name, column_name, min [, missing_val_coding])` |
 | `max_portion_missing = portion`| `assert_column_max_portion_missing` <br> `(table_name, column_name, portion [, missing_val_coding])` |
 | `missing_val = False`| `assert_column_no_missing_values` <br> `(table_name, column_name [, missing_val_coding])` |
 
