@@ -39,6 +39,7 @@ o_spec = OrcaSpec('my_spec',
 		ColumnSpec('unit_id', missing_val_coding=-1)),
 	
 	TableSpec('residential_units', registered=False),
+	
 	InjectableSpec('rate', greater_than=0, less_than=1))
 
 # Assert the specification
