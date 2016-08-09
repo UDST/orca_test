@@ -54,10 +54,10 @@ ot.assert_orca_spec(o_spec)
 There's fairly detailed documentation of individual functions in the [source code](https://github.com/urbansim/orca_test/blob/master/orca_test/orca_test.py).
 
 ### Classes
-- `OrcaSpec(name [, TableSpec objs, InjectableSpec objs])`
-- `TableSpec(table_name [, characteristics, ColumnSpec objs])`
-- `ColumnSpec(column_name [, characteristics])`
-- `InjectableSpec(injectable_name [, characteristics])` -- not yet implemented
+- `OrcaSpec(spec_name, optional TableSpecs, optional InjectableSpecs)`
+- `TableSpec(table_name, optional characteristics, optional ColumnSpecs)`
+- `ColumnSpec(column_name, optional characteristics)`
+- `InjectableSpec(injectable_name, optional characteristics)` -- not yet implemented
 - `OrcaAssertionError`
 
 ### Asserting sets of characteristics
@@ -83,16 +83,15 @@ There's fairly detailed documentation of individual functions in the [source cod
 | `can_be_generated = True`| `assert_column_can_be_generated(table_name, column_name)` |
 | `primary_key = True`| `assert_column_is_primary_key(table_name, column_name)` |
 | `numeric = True`| `assert_column_is_numeric(table_name, column_name)` |
-| `missing_val_coding = {0, -1}`| `assert_column_missing_value_coding` <br> `(table_name, column_name, missing_val_coding)` |
+| `missing_val_coding = 0 or -1`| `assert_column_missing_value_coding` <br> `(table_name, column_name, missing_val_coding)` |
 | `max = value`| `assert_column_max` <br> `(table_name, column_name, max [, missing_val_coding])` |
 | `min = value`| `assert_column_min` <br> `(table_name, column_name, min [, missing_val_coding])` |
 | `max_portion_missing = portion`| `assert_column_max_portion_missing` <br> `(table_name, column_name, portion [, missing_val_coding])` |
 | `missing_val = False`| `assert_column_no_missing_values` <br> `(table_name, column_name [, missing_val_coding])` |
 
-Providing a `missing_val_coding` in a `ColumnSpec()` asserts that there are no `np.nan` values in the column. Asserting a `min`, `max`, `max_portion_missing`, or `missing = False` will take into account the `missing_val_coding` that's provided, or else assume that missing values are coded as `np.nan`. 
+#### Notes
 
-For example, asserting that a column with values `[2, 3, 3, -1]` has `min = 0` will fail, but asserting that it has  
-`min = 0, missing_val_coding = -1` will pass.
+Providing a `missing_val_coding` in a `ColumnSpec()` asserts that there are no `np.nan` values in the column. If you also assert a `min`, `max`, `max_portion_missing`, or `missing = False`, `orca_test` will take into account the `missing_val_coding` that's been provided. For example, asserting that a column with values `[2, 3, 3, -1]` has `min = 0` will fail, but asserting that it has `min = 0, missing_val_coding = -1` will pass.
 
 
 ## Development wish list
