@@ -13,21 +13,19 @@ import orca
 SPEC CLASS DEFINITIONS
 ######################
 
-The Spec objects will store (1) characteristics, passed as named arguments, and
-(2) sub-objects, passed as unnamed arguments. We may want to specify explicitly in the 
-constructors which characteristics and sub-object types are expected, but for now we just 
-accept and store anything that's passed in (less code to change as we adjust the API).
-"""
+The Spec objects will store (a) characteristics, passed as named arguments, and
+(b) sub-objects, passed as unnamed arguments. For now, we accept and store any named
+arguments, regardless of whether they are valid characteristics. (Less code to change
+as we adjust the API.)
 
-class OrcaAssertionError(Exception):
-    __module__ = Exception.__module__
-    
+"""
 
 class OrcaSpec(object):
 
     def __init__(self, name, *args):
         self.name = name
         self.tables = [t for t in args if isinstance(t, TableSpec)]
+        self.injectables = [inj for inj in args if isinstance(inj, InjectableSpec)]
 
 
 class TableSpec(object):
@@ -44,6 +42,23 @@ class ColumnSpec(object):
         self.name = name
         self.properties = kwargs
 
+
+class InjectableSpec(object):
+
+    def __init__(self, name, **kwargs):
+        self.name = name
+        self.properties = kwargs
+
+
+class OrcaAssertionError(Exception):
+    """
+    This is the exception raised when an assertion from this library fails. 
+    
+    """
+    # The default reporting in logs is "orca_test.OrcaAssertionError", but this line
+    # changes that to remove the module name for compactness
+    __module__ = Exception.__module__
+    
 
 
 """
@@ -70,9 +85,12 @@ def assert_orca_spec(o_spec):
     None
     
     """
-    # Assert the properties of each table
-    for t in o_spec.tables:
-        assert_table_spec(t)
+    # Assert the properties of each table and injectable
+    for t_spec in o_spec.tables:
+        assert_table_spec(t_spec)
+    
+    for i_spec in o_spec.injectables:
+        assert_injectable_spec(i_spec)
     
     return
 
@@ -164,6 +182,36 @@ def assert_column_spec(table_name, c_spec):
        
         if k == 'max_portion_missing':
             assert_column_max_portion_missing(table_name, c_spec.name, v, missing_values)
+
+    return
+
+
+def assert_injectable_spec(i_spec):
+    """
+    """
+    # Translate the injectable's properties into assertion statements
+    for k, v in i_spec.properties.items():
+    
+        if (k, v) == ('registered', True):
+            assert_injectable_is_registered(i_spec.name)
+
+        if (k, v) == ('registered', False):
+            assert_injectable_not_registered(i_spec.name)
+
+        if (k, v) == ('can_be_generated', True):
+            assert_injectable_can_be_generated(i_spec.name)
+
+        if (k, v) == ('numeric', True):
+            assert_injectable_is_numeric(i_spec.name)
+
+        if k == 'greater_than':
+            assert_injectable_greater_than(i_spec.name, v)
+
+        if k == 'less_than':
+            assert_injectable_less_than(i_spec.name, v)
+
+        if k == 'has_key':
+            assert_injectable_has_key(i_spec.name, v)
 
     return
 
@@ -564,7 +612,112 @@ def assert_column_no_missing_values(table_name, column_name, missing_values=np.n
     return
 
 
+def assert_injectable_is_registered(injectable_name):
+    """
+    """
+    try:
+        assert orca.is_injectable(injectable_name)
+    except:
+        msg = "Injectable '%s' is not registered" % injectable_name
+        raise OrcaAssertionError(msg)
+    return
 
+
+def assert_injectable_not_registered(injectable_name):
+    """
+    """
+    try:
+        assert not orca.is_injectable(injectable_name)
+    except:
+        msg = "Injectable '%s' is already registered" % injectable_name
+        raise OrcaAssertionError(msg)
+    return
+
+
+def assert_injectable_can_be_generated(injectable_name):
+    """
+    Can an _InjectableFuncWrapper be evaluated without errors?
+    
+    (The Orca documentation appears inconsistent, but orca.get_injectable() *does* attempt
+    to evaluate wrapped functions, and returns the result.)
+    
+    Parameters
+    ----------
+    injectable_name : str
+    
+    Returns
+    -------
+    None
+    
+    """
+    assert_injectable_is_registered(injectable_name)
+    
+    if (orca.injectable_type(injectable_name) == 'function'):
+        try:
+            _ = orca.get_injectable(injectable_name)
+        except:
+            msg = "Injectable '%s' is registered but cannot be evaluated" % injectable_name
+            raise OrcaAssertionError(msg)
+    return
+
+
+def assert_injectable_is_numeric(injectable_name):
+    """
+    """
+    assert_injectable_can_be_generated(injectable_name)
+    inj = orca.get_injectable(injectable_name)
+    t = type(inj).__name__
+    
+    if t not in ['int', 'long', 'float']:
+        msg = "Injectable '%s' has type '%s' (not numeric)" % (injectable_name, t)
+        raise OrcaAssertionError(msg)
+    return
+
+
+def assert_injectable_greater_than(injectable_name, min):
+    """
+    Asserts that a numeric injectable is greater than or equal to a minimum value.
+    
+    """
+    assert_injectable_is_numeric
+    inj = orca.get_injectable(injectable_name)
+    
+    if not inj >= min:
+        msg = "Injectable '%s' has value of %s, less than %s" \
+                % (injectable_name, str(inj), str(min))
+        raise OrcaAssertionError(msg)
+    return
+    
+
+def assert_injectable_less_than(injectable_name, max):
+    """
+    Asserts that a numeric injectable is less than or equal to a maximum value.
+    
+    """
+    assert_injectable_is_numeric
+    inj = orca.get_injectable(injectable_name)
+    
+    if not inj <= max:
+        msg = "Injectable '%s' has value of %s, greater than %s" \
+                % (injectable_name, str(inj), str(max))
+        raise OrcaAssertionError(msg)
+    return
+
+
+def assert_injectable_has_key(injectable_name, key):
+    """
+    """
+    assert_injectable_can_be_generated(injectable_name)
+    inj = orca.get_injectable(injectable_name)
+    
+    if not isinstance(inj, dict):
+        msg = "Injectable '%s' is not a dict" % injectable_name
+        raise OrcaAssertionError(msg)
+        
+    elif key not in inj:
+        msg = "Injectable '%s' does not have key '%s'" % (injectable_name, key)
+        raise OrcaAssertionError(msg)
+    return
 
 
 
