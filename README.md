@@ -39,7 +39,9 @@ o_spec = OrcaSpec('my_spec',
 		ColumnSpec('unit_id', missing_val_coding=-1)),
 	
 	TableSpec('residential_units',
-		registered=False))
+		registered=False),
+		
+	InjectableSpec('rate', greater_than=0, less_than=1))
 
 # Assert the specification
 ot.assert_orca_spec(o_spec)
@@ -57,14 +59,14 @@ There's fairly detailed documentation of individual functions in the [source cod
 - `OrcaSpec( spec_name, optional TableSpecs, optional InjectableSpecs )`
 - `TableSpec( table_name, optional characteristics, optional ColumnSpecs )`
 - `ColumnSpec( column_name, optional characteristics )`
-- `InjectableSpec( injectable_name, optional characteristics )` -- not yet implemented
+- `InjectableSpec( injectable_name, optional characteristics )`
 - `OrcaAssertionError`
 
 ### Asserting sets of characteristics
 - `assert_orca_spec( OrcaSpec )` -- asserts the entire nested spec
 - `assert_table_spec( TableSpec )`
 - `assert_column_spec( table_name, ColumnSpec )`
-- `assert_injectable_spec( InjectableSpec )` -- not yet implemented
+- `assert_injectable_spec( InjectableSpec )`
 
 ### Table assertions
 
@@ -96,10 +98,21 @@ Providing a `missing_val_coding` in a `ColumnSpec()` indicates that there should
 For example, asserting that a column with values `[2, 3, 3, -1]` has `min = 0` will fail, but asserting that it has  
 `min = 0, missing_val_coding = -1` will pass.
 
+### Injectable assertions
+
+| Argument in InjectableSpec() | Equivalent low-level function |
+| ---------------------------- | ----------------------------- |
+| `registered = True` | `assert_injectable_is_registered( injectable_name )` |
+| `registered = False` | `assert_injectable_not_registered( injectable_name )`  |
+| `can_be_generated = True` | `assert_injectable_can_be_generated( injectable_name )` |
+| `numeric = True` | `assert_injectable_is_numeric( injectable_name )` |
+| `greater_than = value` | `assert_injectable_greater_than( injectable_name, value )` |
+| `less_than = value` | `assert_injectable_less_than( injectable_name, value )` |
+| `has_key = str` | `assert_injectable_has_key( injectable_name, str )` |
+
 
 ## Development wish list
 - Add support for broadcasts (foreign keys)
-- Add support for injectables
 - Add support for specs expressed in YAML
 - Write unit tests and set up in Travis
 - Make compatible with python 3
