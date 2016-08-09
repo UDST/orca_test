@@ -86,7 +86,7 @@ There's fairly detailed documentation of individual functions in the [source cod
 | `missing_val_coding = 0 or -1`| `assert_column_missing_value_coding( table_name, column_name, missing_val_coding )` |
 | `max = value`| `assert_column_max( table_name, column_name, max, optional  missing_val_coding)` |
 | `min = value`| `assert_column_min( table_name, column_name, min, optional  missing_val_coding )` |
-| `max_portion_missing = portion`| `assert_column_max_portion_missing( table_name, column_name, portion, optional  missing_val_coding )` |
+| <code>max_portion_missing&nbsp;=&nbsp;portion</code> | `assert_column_max_portion_missing( table_name, column_name, portion, optional  missing_val_coding )` |
 | `missing_val = False`| `assert_column_no_missing_values( table_name, column_name, optional  missing_val_coding )` |
 
 #### Notes
