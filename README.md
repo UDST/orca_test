@@ -54,40 +54,40 @@ ot.assert_orca_spec(o_spec)
 There's fairly detailed documentation of individual functions in the [source code](https://github.com/urbansim/orca_test/blob/master/orca_test/orca_test.py).
 
 ### Classes
-- `OrcaSpec(spec_name, optional TableSpecs, optional InjectableSpecs)`
-- `TableSpec(table_name, optional characteristics, optional ColumnSpecs)`
-- `ColumnSpec(column_name, optional characteristics)`
-- `InjectableSpec(injectable_name, optional characteristics)` -- not yet implemented
+- `OrcaSpec( spec_name, optional&nbsp;TableSpecs, optional&nbsp;InjectableSpecs )`
+- `TableSpec( table_name, optional&nbsp;characteristics, optional&nbsp;ColumnSpecs )`
+- `ColumnSpec( column_name, optional&nbsp;characteristics )`
+- `InjectableSpec( injectable_name, optional&nbsp;characteristics )` -- not yet implemented
 - `OrcaAssertionError`
 
 ### Asserting sets of characteristics
-- `assert_orca_spec(OrcaSpec)` -- asserts the entire nested spec
-- `assert_table_spec(TableSpec)`
-- `assert_column_spec(table_name, ColumnSpec)`
-- `assert_injectable_spec(InjectableSpec)` -- not yet implemented
+- `assert_orca_spec( OrcaSpec )` -- asserts the entire nested spec
+- `assert_table_spec( TableSpec )`
+- `assert_column_spec( table_name, ColumnSpec )`
+- `assert_injectable_spec( InjectableSpec )` -- not yet implemented
 
 ### Table assertions
 
 | Argument in TableSpec() | Equivalent low-level function |
 | ------------------ | -------------------------------- |
-| `registered = True` | `assert_table_is_registered(table_name)` |
-| `registered = False` | `assert_table_not_registered(table_name)` |
-| `can_be_generated = True` | `assert_table_can_be_generated(table_name)` |
+| `registered = True` | `assert_table_is_registered( table_name )` |
+| `registered = False` | `assert_table_not_registered( table_name )` |
+| `can_be_generated = True` | `assert_table_can_be_generated( table_name )` |
 
 ### Column assertions
 
 | Argument in ColumnSpec() | Equivalent low-level function |
 | ------------------ | --------------------------------- |
-| `registered = True` | `assert_column_is_registered(table_name, column_name)` |
-| `registered = False`| `assert_column_not_registered(table_name, column_name)`  |
-| `can_be_generated = True`| `assert_column_can_be_generated(table_name, column_name)` |
-| `primary_key = True`| `assert_column_is_primary_key(table_name, column_name)` |
-| `numeric = True`| `assert_column_is_numeric(table_name, column_name)` |
-| `missing_val_coding = 0 or -1`| `assert_column_missing_value_coding(table_name, column_name, missing_val_coding)` |
-| `max = value`| `assert_column_max( table_name, column_name, max, optional missing_val_coding)` |
-| `min = value`| `assert_column_min` <br> `(table_name, column_name, min [, missing_val_coding])` |
-| `max_portion_missing = portion`| `assert_column_max_portion_missing` <br> `(table_name, column_name, portion [, missing_val_coding])` |
-| `missing_val = False`| `assert_column_no_missing_values` <br> `(table_name, column_name [, missing_val_coding])` |
+| `registered = True` | `assert_column_is_registered( table_name, column_name )` |
+| `registered = False`| `assert_column_not_registered( table_name, column_name )`  |
+| `can_be_generated = True`| `assert_column_can_be_generated( table_name, column_name )` |
+| `primary_key = True`| `assert_column_is_primary_key( table_name, column_name )` |
+| `numeric = True`| `assert_column_is_numeric( table_name, column_name )` |
+| `missing_val_coding = 0 or -1`| `assert_column_missing_value_coding( table_name, column_name, missing_val_coding )` |
+| `max = value`| `assert_column_max( table_name, column_name, max, optional&nbsp;missing_val_coding)` |
+| `min = value`| `assert_column_min` <br> `( table_name, column_name, min, optional&nbsp;missing_val_coding )` |
+| `max_portion_missing = portion`| `assert_column_max_portion_missing( table_name, column_name, portion, optional&nbsp;missing_val_coding )` |
+| `missing_val = False`| `assert_column_no_missing_values( table_name, column_name, optional&nbsp;missing_val_coding )` |
 
 #### Notes
 
