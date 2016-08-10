@@ -35,8 +35,7 @@ o_spec = OrcaSpec('my_spec',
 		ColumnSpec('residential_price', numeric=True, min=0)),
 
 	TableSpec('households',
-		ColumnSpec('building_id', numeric=True, missing_val=False),
-		ColumnSpec('unit_id', missing_val_coding=-1)),
+		ColumnSpec('building_id', foreign_key='buildings.building_id', missing_val_coding=-1)),
 	
 	TableSpec('residential_units', registered=False),
 	
