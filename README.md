@@ -87,7 +87,7 @@ There's fairly detailed documentation of individual functions in the [source cod
 | `missing_val = False`| <code>assert_column_no_missing_values( table_name, column_name, optional&nbsp;missing_val_coding )</code> |
 | <code>max_portion_missing&nbsp;=&nbsp;portion</code> | `assert_column_max_portion_missing( table_name, column_name, portion, optional missing_val_coding )` |
 | `primary_key = True` | `assert_column_is_primary_key( table_name, column_name )` |
-| `foreign_key = 'parent_table_name.parent_column_name'` | `assert_column_is_foreign_key( table_name, column_name, parent_table_name, parent_column_name, optional missing_val_coding )` |
+| `foreign_key = 'parent_table_name.parent_column_name'` | <code>assert_column_is_foreign_key( table_name, column_name, parent_table_name, parent_column_name, optional&nbsp;missing_val_coding )</code> |
 | `max = value` | <code>assert_column_max( table_name, column_name, max, optional&nbsp;missing_val_coding)</code> |
 | `min = value` | <code>assert_column_min( table_name, column_name, min, optional&nbsp;missing_val_coding )</code> |
 
