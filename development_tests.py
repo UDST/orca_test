@@ -21,8 +21,17 @@ def buildings():
         'building_id': [1, 2, 3, 4, 5],
         'strings': ['a','b','c','d','e'],
         'price1': [10, 0, 50, -1, -1],
-        'price2': [10, 0, -1, -1, np.nan] }
+        'price2': [10, 0, -1, -1, np.nan],
+        'fkey_good': [1, 3, 3, 2, np.nan],
+        'fkey_bad': [3, 3, 4, 5, -1] }
     df = pd.DataFrame(data).set_index('building_id')
+    return df
+
+@orca.table('zones')
+def zones():
+    data = {
+        'zone_id': [1, 2, 3] }
+    df = pd.DataFrame(data).set_index('zone_id')
     return df
 
 @orca.table('badtable')
@@ -59,7 +68,8 @@ spec = OrcaSpec('good_spec',
 		ColumnSpec('building_id', primary_key=True),
 		ColumnSpec('price1', numeric=True, missing_val=False, max=50),
 		ColumnSpec('price2', missing_val_coding=np.nan, min=-5),
-		ColumnSpec('price1', missing_val_coding=-1, max_portion_missing=0.5)),
+		ColumnSpec('price1', missing_val_coding=-1, max_portion_missing=0.5),
+		ColumnSpec('fkey_good', foreign_key='zones.zone_id')),
 		
 	InjectableSpec('dict', has_key='Berkeley'),
 	InjectableSpec('rate', greater_than=0, less_than=1),
@@ -87,6 +97,7 @@ bad_specs = [
 #     OrcaSpec('', TableSpec('buildings', ColumnSpec('price1', max=25))),
 #     OrcaSpec('', TableSpec('buildings', ColumnSpec('price1', min=0))),
 #     OrcaSpec('', TableSpec('buildings', ColumnSpec('price2', max_portion_missing=0.1))),
+    OrcaSpec('', TableSpec('buildings', ColumnSpec('fkey_bad', foreign_key='zones.zone_id'))),
     OrcaSpec('', InjectableSpec('nonexistent', registered=True)),
     OrcaSpec('', InjectableSpec('rate', registered=False)),
     OrcaSpec('', InjectableSpec('bad_inj', can_be_generated=True)),

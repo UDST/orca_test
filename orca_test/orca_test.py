@@ -145,12 +145,12 @@ def assert_column_spec(table_name, c_spec):
     
     """
     # The missing-value coding affects other assertions, so check for this first
-    missing_values = np.nan
+    missing_val_coding = np.nan
     for k, v in c_spec.properties.items():
         
         if k == ('missing_val_coding'):
-            missing_values = v
-            assert_column_missing_value_coding(table_name, c_spec.name, missing_values)
+            missing_val_coding = v
+            assert_column_missing_value_coding(table_name, c_spec.name, missing_val_coding)
     
     
     # Translate the column's properties into assertion statements
@@ -168,20 +168,25 @@ def assert_column_spec(table_name, c_spec):
         if (k, v) == ('primary_key', True):
             assert_column_is_primary_key(table_name, c_spec.name)
 
+        if k == 'foreign_key':
+            # The value should be a str with format 'parent_table_name.parent_column_name'
+            tab, col = v.split('.')
+            assert_column_is_foreign_key(table_name, c_spec.name, tab, col, missing_val_coding)
+       
         if (k, v) == ('numeric', True):
             assert_column_is_numeric(table_name, c_spec.name)
             
         if (k, v) == ('missing_val', False):
-            assert_column_no_missing_values(table_name, c_spec.name, missing_values)
+            assert_column_no_missing_values(table_name, c_spec.name, missing_val_coding)
 
         if k == 'max':
-            assert_column_max(table_name, c_spec.name, v, missing_values)
+            assert_column_max(table_name, c_spec.name, v, missing_val_coding)
        
         if k == 'min':
-            assert_column_min(table_name, c_spec.name, v, missing_values)
+            assert_column_min(table_name, c_spec.name, v, missing_val_coding)
        
         if k == 'max_portion_missing':
-            assert_column_max_portion_missing(table_name, c_spec.name, v, missing_values)
+            assert_column_max_portion_missing(table_name, c_spec.name, v, missing_val_coding)
 
     return
 
@@ -396,10 +401,45 @@ def assert_column_is_primary_key(table_name, column_name):
     return
 
 
-def assert_column_matches_other_index(table_name_1, column_name_1, table_name_2, column_name_2, missing_values='np.nan'):
+def assert_column_is_foreign_key(table_name, column_name, parent_table_name, 
+        parent_column_name, missing_val_coding=np.nan):
     """
-    Maybe this should be done via broadcasts?
+    Asserts that a column is a foreign key whose values correspond to the primary key
+    column of a parent table. This confirms the integrity of "broadcast" relationships.
+    
+    For example, if the 'buildings' table has a 'zone_id' column whose values should 
+    correspond to the index of the 'zones' table, the former is the foreign key and the 
+    latter is the primary key that it matches. You could test for that with:
+    
+        assert_column_is_foreign_key('buildings', 'zone_id', 'zones', 'zone_id')
+    
+    The assertion will fail if the foreign key column contains values that are not in the
+    primary key column. It does not currently test whether a "broadcast" relationship
+    has also been registered between the tables. 
+    
+    Note that this assertion is fairly strict, and there are valid "broadcast" 
+    relationships that would fail it. But it corresponds well to the standard usage.
+    
     """
+    assert_column_can_be_generated(table_name, column_name)
+    assert_column_is_primary_key(parent_table_name, parent_column_name)
+
+    ds_parent = get_column_or_index(parent_table_name, parent_column_name)
+    ds_child = get_column_or_index(table_name, column_name)
+    # Foreign key in child table may have missing values, but primary key should not
+    ds_child = strip_missing_values(ds_child, missing_val_coding)
+    
+    # Identify values in ds_child that are not in ds_parent
+    diff = np.setdiff1d(ds_child.values, ds_parent.values)
+    try:
+        assert len(diff) == 0
+    except:
+        msg = "Column '%s.%s' has values that are not in '%s.%s'" \
+                % (table_name, column_name, parent_table_name, parent_column_name)
+        if column_name != parent_column_name:
+            msg = "Column '%s' has values that are not in '%s'" \
+                    % (column_name, parent_column_name)
+        raise OrcaAssertionError(msg)
     return
 
 
