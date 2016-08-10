@@ -82,7 +82,7 @@ There's fairly detailed documentation of individual functions in the [source cod
 | `registered = False` | `assert_column_not_registered( table_name, column_name )`  |
 | `can_be_generated = True` | `assert_column_can_be_generated( table_name, column_name )` |
 | `numeric = True` | `assert_column_is_numeric( table_name, column_name )` |
-| `missing_val_coding = 0 or -1` | `assert_column_missing_value_coding( table_name, column_name, missing_val_coding )` |
+| `missing_val_coding = np.nan, 0, -1` | `assert_column_missing_value_coding( table_name, column_name, missing_val_coding )` |
 | `missing = False`| <code>assert_column_no_missing_values( table_name, column_name, optional&nbsp;missing_val_coding )</code> |
 | <code>max_portion_missing&nbsp;=&nbsp;portion</code> | `assert_column_max_portion_missing( table_name, column_name, portion, optional missing_val_coding )` |
 | `primary_key = True` | `assert_column_is_primary_key( table_name, column_name )` |
