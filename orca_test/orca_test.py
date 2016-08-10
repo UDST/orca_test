@@ -176,7 +176,7 @@ def assert_column_spec(table_name, c_spec):
         if (k, v) == ('numeric', True):
             assert_column_is_numeric(table_name, c_spec.name)
             
-        if (k, v) == ('missing_val', False):
+        if (k, v) == ('missing', False):
             assert_column_no_missing_values(table_name, c_spec.name, missing_val_coding)
 
         if k == 'max':

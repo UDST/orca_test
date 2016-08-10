@@ -32,7 +32,7 @@ o_spec = OrcaSpec('my_spec',
 
 	TableSpec('buildings', 
 		ColumnSpec('building_id', primary_key=True),
-		ColumnSpec('residential_price', numeric=True, min=0)),
+		ColumnSpec('residential_price', min=0, missing=False)),
 
 	TableSpec('households',
 		ColumnSpec('building_id', foreign_key='buildings.building_id', missing_val_coding=-1)),
@@ -83,7 +83,7 @@ There's fairly detailed documentation of individual functions in the [source cod
 | `can_be_generated = True` | `assert_column_can_be_generated( table_name, column_name )` |
 | `numeric = True` | `assert_column_is_numeric( table_name, column_name )` |
 | `missing_val_coding = 0 or -1` | `assert_column_missing_value_coding( table_name, column_name, missing_val_coding )` |
-| `missing_val = False`| <code>assert_column_no_missing_values( table_name, column_name, optional&nbsp;missing_val_coding )</code> |
+| `missing = False`| <code>assert_column_no_missing_values( table_name, column_name, optional&nbsp;missing_val_coding )</code> |
 | <code>max_portion_missing&nbsp;=&nbsp;portion</code> | `assert_column_max_portion_missing( table_name, column_name, portion, optional missing_val_coding )` |
 | `primary_key = True` | `assert_column_is_primary_key( table_name, column_name )` |
 | `foreign_key = 'parent_table_name.parent_column_name'` | <code>assert_column_is_foreign_key( table_name, column_name, parent_table_name, parent_column_name, optional&nbsp;missing_val_coding )</code> |
