@@ -50,7 +50,7 @@ ot.assert_orca_spec(o_spec)
 - [development_tests.py](https://github.com/urbansim/orca_test/blob/master/development_tests.py) in this repo
 
 
-## Full API
+## API Reference
 
 There's fairly detailed documentation of individual functions in the [source code](https://github.com/urbansim/orca_test/blob/master/orca_test/orca_test.py).
 
