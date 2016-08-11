@@ -496,14 +496,14 @@ def assert_column_is_numeric(table_name, column_name):
     return
 
 
-def strip_missing_values(series, missing_values=np.nan):
+def strip_missing_values(series, missing_val_coding=np.nan):
     """
     Helper function. Returns a pd.Series with missing values stripped.
     
     Parameters
     ----------
     series : pandas.Series
-    missing_values : {0, -1, np.nan}, optional
+    missing_val_coding : {0, -1, np.nan}, optional
         Value that indicates missing entries.
     
     Returns
@@ -511,14 +511,14 @@ def strip_missing_values(series, missing_values=np.nan):
     series : pandas.Series
     
     """
-    if np.isnan(missing_values):
+    if np.isnan(missing_val_coding):
         return series.dropna()
     
     else:
-        return series[series != missing_values].copy()
+        return series[series != missing_val_coding].copy()
 
 
-def assert_column_missing_value_coding(table_name, column_name, missing_values):
+def assert_column_missing_value_coding(table_name, column_name, missing_val_coding):
     """
     Asserts that a column's missing entries are all coded with a particular value.
     
@@ -526,7 +526,7 @@ def assert_column_missing_value_coding(table_name, column_name, missing_values):
     ----------
     table_name : str
     column_name : str
-    missing_values : {0, -1}
+    missing_val_coding : {0, -1}
         Value that indicates missing entires.
     
     Returns
@@ -536,18 +536,18 @@ def assert_column_missing_value_coding(table_name, column_name, missing_values):
     """
     assert_column_can_be_generated(table_name, column_name)
     ds = get_column_or_index(table_name, column_name)
-    ds = strip_missing_values(ds, missing_values)
+    ds = strip_missing_values(ds, missing_val_coding)
 
     try:
         assert sum(pd.isnull(ds)) == 0
     except:
         msg = "Column '%s' has null entries that are not coded as %s" \
-                % (column_name, str(missing_values))
+                % (column_name, str(missing_val_coding))
         raise OrcaAssertionError(msg)
     return
 
 
-def assert_column_max(table_name, column_name, max, missing_values=np.nan):
+def assert_column_max(table_name, column_name, max, missing_val_coding=np.nan):
     """
     Asserts a maximum value for a numeric column, ignoring missing values.
     
@@ -557,7 +557,7 @@ def assert_column_max(table_name, column_name, max, missing_values=np.nan):
     column_name : str
     max : int or float
         Maximum value.
-    missing_values : {0, -1, np.nan}, optional
+    missing_val_coding : {0, -1, np.nan}, optional
         Value that indicates missing entires.
     
     Returns
@@ -567,7 +567,7 @@ def assert_column_max(table_name, column_name, max, missing_values=np.nan):
     """
     assert_column_is_numeric(table_name, column_name)
     ds = get_column_or_index(table_name, column_name)
-    ds = strip_missing_values(ds, missing_values)
+    ds = strip_missing_values(ds, missing_val_coding)
     
     try:
         assert ds.max() <= max
@@ -578,7 +578,7 @@ def assert_column_max(table_name, column_name, max, missing_values=np.nan):
     return
     
 
-def assert_column_min(table_name, column_name, min, missing_values=np.nan):
+def assert_column_min(table_name, column_name, min, missing_val_coding=np.nan):
     """
     Asserts a minimum value for a numeric column, ignoring missing values.
     
@@ -588,7 +588,7 @@ def assert_column_min(table_name, column_name, min, missing_values=np.nan):
     column_name : str
     min : int or float
         Minimum value.
-    missing_values : {0, -1, np.nan}, optional
+    missing_val_coding : {0, -1, np.nan}, optional
         Value that indicates missing entires.
     
     Returns
@@ -598,7 +598,7 @@ def assert_column_min(table_name, column_name, min, missing_values=np.nan):
     """
     assert_column_is_numeric(table_name, column_name)
     ds = get_column_or_index(table_name, column_name)
-    ds = strip_missing_values(ds, missing_values)
+    ds = strip_missing_values(ds, missing_val_coding)
     
     try:
         assert ds.min() >= min
@@ -609,7 +609,7 @@ def assert_column_min(table_name, column_name, min, missing_values=np.nan):
     return
 
 
-def assert_column_max_portion_missing(table_name, column_name, portion, missing_values=np.nan):
+def assert_column_max_portion_missing(table_name, column_name, portion, missing_val_coding=np.nan):
     """
     Assert the maximum portion of a column's entries that may be missing.
     
@@ -619,7 +619,7 @@ def assert_column_max_portion_missing(table_name, column_name, portion, missing_
     column_name : str
     portion : float from 0 to 1
         Maximum portion of entries that may be missing.
-    missing_values : {0, -1, np.nan}, optional
+    missing_val_coding : {0, -1, np.nan}, optional
         Value that indicates missing entires.
     
     Returns
@@ -629,7 +629,7 @@ def assert_column_max_portion_missing(table_name, column_name, portion, missing_
     """
     assert_column_can_be_generated(table_name, column_name)
     ds = get_column_or_index(table_name, column_name)
-    missing = len(ds) - len(strip_missing_values(ds, missing_values))
+    missing = len(ds) - len(strip_missing_values(ds, missing_val_coding))
     missing_portion = float(missing) / len(ds)
     
     # Format as percentages for output
@@ -645,10 +645,10 @@ def assert_column_max_portion_missing(table_name, column_name, portion, missing_
     return
 
 
-def assert_column_no_missing_values(table_name, column_name, missing_values=np.nan):
+def assert_column_no_missing_values(table_name, column_name, missing_val_coding=np.nan):
     """
     """
-    assert_column_max_portion_missing(table_name, column_name, 0, missing_values)
+    assert_column_max_portion_missing(table_name, column_name, 0, missing_val_coding)
     return
 
 
