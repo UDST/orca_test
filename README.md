@@ -47,6 +47,7 @@ ot.assert_orca_spec(o_spec)
 
 ### Working demos
 - [development_tests.py](https://github.com/urbansim/orca_test/blob/master/development_tests.py) in this repo
+- In the `ual-development` branch of `UAL/bayarea_urbansim`, the model steps include `orca_test` assertions to validate expected data characteristics ([ual.py](https://github.com/ual/bayarea_urbansim/blob/ual-development/baus/ual.py))
 
 
 ## API Reference
