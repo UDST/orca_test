@@ -111,7 +111,6 @@ For example, asserting that a column with values `[2, 3, 3, -1]` has `min = 0` w
 
 
 ## Development wish list
-- Add support for broadcasts (foreign keys)
 - Add support for specs expressed in YAML
 - Write unit tests and set up in Travis
 - Make compatible with python 3
@@ -130,22 +129,24 @@ For example, asserting that a column with values `[2, 3, 3, -1]` has `min = 0` w
   	  - primary_key: True
     - column_spec:
   	  - name: residential_price
-  	  - numeric: True
   	  - min: 0
+  	  - missing: False
   
   - table_spec:
     - name: households
     - column_spec:
   	  - name: building_id
-  	  - numeric: True
-  	  - missing_val: False
-    - column_spec:
-  	  - name: unit_id
+  	  - foreign_key: buildings.building_id
   	  - missing_val_coding: -1
   
   - table_spec:
     - name: residential_units
     - registered: False
+    
+  - injectable_spec:
+    - name: rate
+    - greater_than: 0
+    - less_than: 1
 ```
 
 
