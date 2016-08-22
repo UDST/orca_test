@@ -503,7 +503,7 @@ def strip_missing_values(series, missing_val_coding=np.nan):
     Parameters
     ----------
     series : pandas.Series
-    missing_val_coding : {0, -1, np.nan}, optional
+    missing_val_coding : {np.nan, int, str}, optional
         Value that indicates missing entries.
     
     Returns
@@ -511,9 +511,11 @@ def strip_missing_values(series, missing_val_coding=np.nan):
     series : pandas.Series
     
     """
-    if np.isnan(missing_val_coding):
+    # For np.nan
+    if type(missing_val_coding) == 'float':
         return series.dropna()
     
+    # For int or str
     else:
         return series[series != missing_val_coding].copy()
 
@@ -526,7 +528,7 @@ def assert_column_missing_value_coding(table_name, column_name, missing_val_codi
     ----------
     table_name : str
     column_name : str
-    missing_val_coding : {0, -1}
+    missing_val_coding : {np.nan, int, str}
         Value that indicates missing entires.
     
     Returns
@@ -557,7 +559,7 @@ def assert_column_max(table_name, column_name, max, missing_val_coding=np.nan):
     column_name : str
     max : int or float
         Maximum value.
-    missing_val_coding : {0, -1, np.nan}, optional
+    missing_val_coding : {np.nan, int, str}, optional
         Value that indicates missing entires.
     
     Returns
@@ -588,7 +590,7 @@ def assert_column_min(table_name, column_name, min, missing_val_coding=np.nan):
     column_name : str
     min : int or float
         Minimum value.
-    missing_val_coding : {0, -1, np.nan}, optional
+    missing_val_coding : {np.nan, int, str}, optional
         Value that indicates missing entires.
     
     Returns
@@ -619,7 +621,7 @@ def assert_column_max_portion_missing(table_name, column_name, portion, missing_
     column_name : str
     portion : float from 0 to 1
         Maximum portion of entries that may be missing.
-    missing_val_coding : {0, -1, np.nan}, optional
+    missing_val_coding : {np.nan, int, str}, optional
         Value that indicates missing entires.
     
     Returns
