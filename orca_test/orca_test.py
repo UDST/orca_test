@@ -453,7 +453,7 @@ def get_column_or_index(table_name, column_name):
     t = orca.get_table(table_name)
     
     if column_name in t.index.names:
-    	return t.index.get_level_values(column_name).to_series()
+        return t.index.get_level_values(column_name).to_series()
     else:
         return t.get_column(column_name)
     
