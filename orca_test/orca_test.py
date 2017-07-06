@@ -7,8 +7,6 @@ import pandas as pd
 
 import orca
 
-print("now we're developing!")
-
 
 """
 ######################
