@@ -665,7 +665,7 @@ def assert_column_values_in(table_name, column_name, values,
     # Identify values in ds that are not in values list
     diff = np.setdiff1d(ds.values, values)
     if len(diff) != 0:
-        msg = "Column {}.{} contains the following values that are not " \
+        msg = "Column {}.{} contains values that are not " \
               "in the acceptable values list: {}".format(table_name, column_name, 
                                                   str(values))
         raise OrcaAssertionError(msg)
