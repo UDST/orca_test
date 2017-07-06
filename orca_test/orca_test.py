@@ -7,6 +7,8 @@ import pandas as pd
 
 import orca
 
+print("now we're developing!")
+
 
 """
 ######################
@@ -187,6 +189,9 @@ def assert_column_spec(table_name, c_spec):
        
         if k == 'max_portion_missing':
             assert_column_max_portion_missing(table_name, c_spec.name, v, missing_val_coding)
+
+        if k == 'values_in':
+            assert_column_values_in(table_name, c_spec.name, v, missing_val_coding)
 
     return
 
@@ -570,7 +575,7 @@ def assert_column_min(table_name, column_name, minimum, missing_val_coding=np.na
     column_name : str
     minimum : int or float
     missing_val_coding : {0, -1, np.nan}, optional
-        Value that indicates missing entires.
+        Value that indicates missing entries.
     
     Returns
     -------
@@ -626,6 +631,46 @@ def assert_column_no_missing_values(table_name, column_name, missing_val_coding=
     """
     """
     assert_column_max_portion_missing(table_name, column_name, 0, missing_val_coding)
+    return
+
+
+def assert_column_values_in(table_name, column_name, values,
+                            missing_val_coding=np.nan):
+    """
+    Asserts that the values in a specified column correspond to a given list
+    of acceptable values.
+    
+    Parameters
+    ----------
+    table_name : str
+    column_name : str
+    values : list or str
+        List of values or single value to check column against
+    missing_val_coding : {0, -1, np.nan}, optional
+        Value that indicates missing entries.
+    
+    Returns
+    -------
+    None
+    
+    """
+
+    assert_column_can_be_generated(table_name, column_name)
+    
+    ds = get_column_or_index(table_name, column_name)
+    if type(values) != list:
+        values = [values]
+    ds_child = get_column_or_index(table_name, column_name)
+    # strip missing values from dataset
+    ds = strip_missing_values(ds, missing_val_coding)
+    
+    # Identify values in ds that are not in values list
+    diff = np.setdiff1d(ds.values, values)
+    if len(diff) != 0:
+        msg = "Column {}.{} contains the following values that are not " \
+              "in the acceptable values list: {}".format(table_name, column_name, 
+                                                  str(values))
+        raise OrcaAssertionError(msg)
     return
 
 
