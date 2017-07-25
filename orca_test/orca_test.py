@@ -191,6 +191,9 @@ def assert_column_spec(table_name, c_spec):
         if k == 'values_in':
             assert_column_values_in(table_name, c_spec.name, v, missing_val_coding)
 
+        if (k, v) == ('is_unique', True):
+            assert_column_is_unique(table_name, c_spec.name)
+
     return
 
 
@@ -392,6 +395,31 @@ def assert_column_is_primary_key(table_name, column_name):
     if sum(pd.isnull(idx)) != 0:
         msg = "Column '%s' is the index of table '%s' but it contains missing values" \
                 % (column_name, table_name)
+        raise OrcaAssertionError(msg)
+    return
+
+
+def assert_column_is_unique(table_name, column_name):
+    """
+    Assert that column's values are unique. 
+    
+    Parameters
+    ----------
+    table_name : str
+    column_name : str
+    
+    Returns
+    -------
+    None
+    
+    """
+    assert_column_can_be_generated(table_name, column_name)
+    
+    ds = get_column_or_index(table_name, column_name)
+    
+    if len(ds.unique()) != len(ds):
+        msg = "Column '%s' does not have unique values" \
+                % (column_name)
         raise OrcaAssertionError(msg)
     return
 
