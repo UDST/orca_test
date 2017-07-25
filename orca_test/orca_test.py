@@ -417,8 +417,6 @@ def assert_column_is_unique(table_name, column_name):
     
     ds = get_column_or_index(table_name, column_name)
     
-    print(ds)
-    
     if len(ds.unique()) != len(ds):
         msg = "Column '%s' does not have unique values" \
                 % (column_name)
