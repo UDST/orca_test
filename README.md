@@ -90,6 +90,7 @@ There's fairly detailed documentation of individual functions in the [source cod
 | `foreign_key = 'parent_table_name.parent_column_name'` | <code>assert_column_is_foreign_key( table_name, column_name, parent_table_name, parent_column_name, optional&nbsp;missing_val_coding )</code> |
 | `max = value` | <code>assert_column_max( table_name, column_name, maximum, optional&nbsp;missing_val_coding)</code> |
 | `min = value` | <code>assert_column_min( table_name, column_name, minimum, optional&nbsp;missing_val_coding )</code> |
+| `is_unique = True` | <code>assert_column_is_unique( table_name, column_name )</code> |
 
 #### Notes
 
