@@ -22,4 +22,4 @@ install:
 - conda list
 
 script:
-- cd ../orca_test/tests/integration; python integration_orca_test.py
+- cd orca_test/tests/integration; python integration_orca_test.py
