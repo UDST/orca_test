@@ -18,6 +18,6 @@ setup(
     install_requires=[
         'numpy >= 1.0',
         'pandas >= 0.12',
-        'orca >= 1.3.0',
+        'orca >= 1.3.0'
     ]
 )

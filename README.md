@@ -1,6 +1,8 @@
 Orca_test
 =========
 
+[![Build Status](https://travis-ci.org/UDST/orca_test.svg?branch=master)](https://travis-ci.org/UDST/orca_test)
+
 This is a library of assertions about the characteristics of tables, columns, and injectables that are registered in [Orca](https://github.com/udst/orca). 
 
 The motivation is that [UrbanSim](https://github.com/udst/urbansim) model code expects particular tables and columns to be in place, and can fail unpredictably when data is not as expected (missing columns, NaNs, negative prices, log-of-zero). These failures are rare, but hard to debug, and can happen at any time because data is modified as models run. 
@@ -115,7 +117,6 @@ For example, asserting that a column with values `[2, 3, 3, -1]` has `min = 0` w
 ## Development wish list
 - Add support for specs expressed in YAML
 - Write unit tests and set up in Travis
-- Make compatible with python 3
 
 
 ## Sample YAML syntax (not yet implemented)
