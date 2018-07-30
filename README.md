@@ -117,7 +117,6 @@ For example, asserting that a column with values `[2, 3, 3, -1]` has `min = 0` w
 ## Development wish list
 - Add support for specs expressed in YAML
 - Write unit tests and set up in Travis
-- Make compatible with python 3
 
 
 ## Sample YAML syntax (not yet implemented)
