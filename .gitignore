@@ -62,7 +62,3 @@ tmtagsHistory
 *.sublime-workspace
 .bundle
 .ipynb_checkpoints
-
-# pycharm files #
-######################
-/.idea

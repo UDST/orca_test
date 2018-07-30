@@ -20,6 +20,8 @@ install:
   conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip numpy pandas orca
 - source activate test-environment
 - conda list
+- pip install git+https://github.com/UDST/orca_test.git
+- pip install .
 
 script:
 - cd orca_test/tests/integration; python integration_orca_test.py
