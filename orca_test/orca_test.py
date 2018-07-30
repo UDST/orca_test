@@ -557,8 +557,7 @@ def assert_column_max(table_name, column_name, max, missing_val_coding=np.nan):
     ----------
     table_name : str
     column_name : str
-    max : int or float
-        Maximum value.
+    maximum : int or float
     missing_val_coding : {np.nan, int, str}, optional
         Value that indicates missing entires.
     
@@ -588,8 +587,7 @@ def assert_column_min(table_name, column_name, min, missing_val_coding=np.nan):
     ----------
     table_name : str
     column_name : str
-    min : int or float
-        Minimum value.
+    minimum : int or float
     missing_val_coding : {np.nan, int, str}, optional
         Value that indicates missing entires.
     
