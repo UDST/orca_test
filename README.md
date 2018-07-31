@@ -1,6 +1,8 @@
 Orca_test
 =========
 
+[![Build Status](https://travis-ci.org/UDST/orca_test.svg?branch=master)](https://travis-ci.org/UDST/orca_test)
+
 This is a library of assertions about the characteristics of tables, columns, and injectables that are registered in [Orca](https://github.com/udst/orca). 
 
 The motivation is that [UrbanSim](https://github.com/udst/urbansim) model code expects particular tables and columns to be in place, and can fail unpredictably when data is not as expected (missing columns, NaNs, negative prices, log-of-zero). These failures are rare, but hard to debug, and can happen at any time because data is modified as models run. 
@@ -88,8 +90,9 @@ There's fairly detailed documentation of individual functions in the [source cod
 | <code>max_portion_missing&nbsp;=&nbsp;portion</code> | `assert_column_max_portion_missing( table_name, column_name, portion, optional missing_val_coding )` |
 | `primary_key = True` | `assert_column_is_primary_key( table_name, column_name )` |
 | `foreign_key = 'parent_table_name.parent_column_name'` | <code>assert_column_is_foreign_key( table_name, column_name, parent_table_name, parent_column_name, optional&nbsp;missing_val_coding )</code> |
-| `max = value` | <code>assert_column_max( table_name, column_name, max, optional&nbsp;missing_val_coding)</code> |
-| `min = value` | <code>assert_column_min( table_name, column_name, min, optional&nbsp;missing_val_coding )</code> |
+| `max = value` | <code>assert_column_max( table_name, column_name, maximum, optional&nbsp;missing_val_coding)</code> |
+| `min = value` | <code>assert_column_min( table_name, column_name, minimum, optional&nbsp;missing_val_coding )</code> |
+| `is_unique = True` | <code>assert_column_is_unique( table_name, column_name )</code> |
 
 #### Notes
 
@@ -114,7 +117,6 @@ For example, asserting that a column with values `[2, 3, 3, -1]` has `min = 0` w
 ## Development wish list
 - Add support for specs expressed in YAML
 - Write unit tests and set up in Travis
-- Make compatible with python 3
 
 
 ## Sample YAML syntax (not yet implemented)

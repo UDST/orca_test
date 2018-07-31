@@ -20,6 +20,7 @@ as we adjust the API.)
 
 """
 
+
 class OrcaSpec(object):
 
     def __init__(self, name, *args):
@@ -60,14 +61,14 @@ class OrcaAssertionError(Exception):
     __module__ = Exception.__module__
     
 
-
 """
 #######################################
 FUNCTIONS FOR WORKING WITH SPEC OBJECTS
 #######################################
 """
 
-def spec_from_yaml(str):
+
+def spec_from_yaml(string):
     return
 
 
@@ -148,11 +149,10 @@ def assert_column_spec(table_name, c_spec):
     missing_val_coding = np.nan
     for k, v in c_spec.properties.items():
         
-        if k == ('missing_val_coding'):
+        if k == 'missing_val_coding':
             missing_val_coding = v
             assert_column_missing_value_coding(table_name, c_spec.name, missing_val_coding)
-    
-    
+
     # Translate the column's properties into assertion statements
     for k, v in c_spec.properties.items():
     
@@ -188,6 +188,12 @@ def assert_column_spec(table_name, c_spec):
         if k == 'max_portion_missing':
             assert_column_max_portion_missing(table_name, c_spec.name, v, missing_val_coding)
 
+        if k == 'values_in':
+            assert_column_values_in(table_name, c_spec.name, v, missing_val_coding)
+
+        if (k, v) == ('is_unique', True):
+            assert_column_is_unique(table_name, c_spec.name)
+
     return
 
 
@@ -221,20 +227,18 @@ def assert_injectable_spec(i_spec):
     return
 
 
-
 """
 ###################
 ASSERTION FUNCTIONS
 ###################
 """
 
+
 def assert_table_is_registered(table_name):
     """
     Has a table name been registered with orca?
     """
-    try:
-        assert orca.is_table(table_name)
-    except:
+    if not orca.is_table(table_name):
         msg = "Table '%s' is not registered" % table_name
         raise OrcaAssertionError(msg)
     return
@@ -243,9 +247,7 @@ def assert_table_is_registered(table_name):
 def assert_table_not_registered(table_name):
     """
     """
-    try:
-        assert not orca.is_table(table_name)
-    except:
+    if orca.is_table(table_name):
         msg = "Table '%s' is already registered" % table_name
         raise OrcaAssertionError(msg)
     return
@@ -265,10 +267,11 @@ def assert_table_can_be_generated(table_name):
     """
     assert_table_is_registered(table_name)
     
-    if (orca.table_type(table_name) == 'function'):
+    if orca.table_type(table_name) == 'function':
         try:
             _ = orca.get_raw_table(table_name)._call_func()
         except:
+            # TODO: issues #3 log backtrace
             msg = "Table '%s' is registered but cannot be generated" % table_name
             raise OrcaAssertionError(msg)
     return
@@ -292,9 +295,7 @@ def assert_column_is_registered(table_name, column_name):
     assert_table_can_be_generated(table_name)
     t = orca.get_table(table_name)
     
-    try:
-        assert (column_name in t.columns) or (column_name == t.index.name)
-    except:
+    if (column_name not in t.columns) and (column_name not in t.index.names):
         msg = "Column '%s' is not registered in table '%s'" % (column_name, table_name)
         raise OrcaAssertionError(msg)
     return
@@ -316,9 +317,7 @@ def assert_column_not_registered(table_name, column_name):
     assert_table_can_be_generated(table_name)
     t = orca.get_table(table_name)
     
-    try:
-        assert (not column_name in t.columns) and (column_name != t.index.name)
-    except:
+    if (column_name in t.columns) or (column_name in t.index.names):
         msg = "Column '%s' is already registered in table '%s'" % (column_name, table_name)
         raise OrcaAssertionError(msg)
     return
@@ -347,14 +346,15 @@ def assert_column_can_be_generated(table_name, column_name):
     t = orca.get_table(table_name)
     
     # t.column_type() fails for index columns, so we have to check for them separately
-    if (column_name == t.index.name):
+    if column_name in t.index.names:
         return
     
-    elif (t.column_type(column_name) == 'function'):
+    elif t.column_type(column_name) == 'function':
         try:
             # This seems to be the only way to trigger evaluation
             _ = t.get_column(column_name)
         except:
+            # TODO: issues #3 log backtrace
             msg = "Column '%s' is registered but cannot be generated" % column_name
             raise OrcaAssertionError(msg)
     return
@@ -377,32 +377,55 @@ def assert_column_is_primary_key(table_name, column_name):
     """
     assert_column_can_be_generated(table_name, column_name)
     
-    try:
-        idx = orca.get_table(table_name).index
-        assert idx.name == column_name
-    except:
+    idx = orca.get_table(table_name).index
+    if len(idx.names) > 1:
+        msg = "The table '%s' has a multi-index, and primary key checks are not yet supported." \
+                % table_name
+        raise OrcaAssertionError(msg)
+    if idx.name != column_name:
         msg = "Column '%s' is not set as the index of table '%s'" \
                 % (column_name, table_name)
         raise OrcaAssertionError(msg)
         
-    try:
-        assert len(idx.unique()) == len(idx)
-    except:
+    if len(idx.unique()) != len(idx):
         msg = "Column '%s' is the index of table '%s' but its values are not unique" \
                 % (column_name, table_name)
         raise OrcaAssertionError(msg)
         
-    try:
-        assert sum(pd.isnull(idx)) == 0
-    except:
+    if sum(pd.isnull(idx)) != 0:
         msg = "Column '%s' is the index of table '%s' but it contains missing values" \
                 % (column_name, table_name)
         raise OrcaAssertionError(msg)
     return
 
 
-def assert_column_is_foreign_key(table_name, column_name, parent_table_name, 
-        parent_column_name, missing_val_coding=np.nan):
+def assert_column_is_unique(table_name, column_name):
+    """
+    Assert that column's values are unique. 
+    
+    Parameters
+    ----------
+    table_name : str
+    column_name : str
+    
+    Returns
+    -------
+    None
+    
+    """
+    assert_column_can_be_generated(table_name, column_name)
+    
+    ds = get_column_or_index(table_name, column_name)
+    
+    if len(ds.unique()) != len(ds):
+        msg = "Column '%s' does not have unique values" \
+                % (column_name)
+        raise OrcaAssertionError(msg)
+    return
+
+
+def assert_column_is_foreign_key(table_name, column_name, parent_table_name,
+                                 parent_column_name, missing_val_coding=np.nan):
     """
     Asserts that a column is a foreign key whose values correspond to the primary key
     column of a parent table. This confirms the integrity of "broadcast" relationships.
@@ -431,9 +454,7 @@ def assert_column_is_foreign_key(table_name, column_name, parent_table_name,
     
     # Identify values in ds_child that are not in ds_parent
     diff = np.setdiff1d(ds_child.values, ds_parent.values)
-    try:
-        assert len(diff) == 0
-    except:
+    if len(diff) != 0:
         msg = "Column '%s.%s' has values that are not in '%s.%s'" \
                 % (table_name, column_name, parent_table_name, parent_column_name)
         if column_name != parent_column_name:
@@ -462,9 +483,8 @@ def get_column_or_index(table_name, column_name):
     assert_column_can_be_generated(table_name, column_name)
     t = orca.get_table(table_name)
     
-    if (column_name == t.index.name):
-        return pd.Series(t.index)
-    
+    if column_name in t.index.names:
+        return t.index.get_level_values(column_name).to_series()
     else:
         return t.get_column(column_name)
     
@@ -486,12 +506,10 @@ def assert_column_is_numeric(table_name, column_name):
     
     """
     assert_column_can_be_generated(table_name, column_name)
-    type = get_column_or_index(table_name, column_name).dtype
+    dtype = get_column_or_index(table_name, column_name).dtype
     
-    try:
-        assert type in ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-    except:
-        msg = "Column '%s' has type '%s' (not numeric)" % (column_name, type)
+    if dtype not in ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']:
+        msg = "Column '%s' has type '%s' (not numeric)" % (column_name, dtype)
         raise OrcaAssertionError(msg)
     return
 
@@ -540,16 +558,14 @@ def assert_column_missing_value_coding(table_name, column_name, missing_val_codi
     ds = get_column_or_index(table_name, column_name)
     ds = strip_missing_values(ds, missing_val_coding)
 
-    try:
-        assert sum(pd.isnull(ds)) == 0
-    except:
+    if sum(pd.isnull(ds)) != 0:
         msg = "Column '%s' has null entries that are not coded as %s" \
                 % (column_name, str(missing_val_coding))
         raise OrcaAssertionError(msg)
     return
 
 
-def assert_column_max(table_name, column_name, max, missing_val_coding=np.nan):
+def assert_column_max(table_name, column_name, maximum, missing_val_coding=np.nan):
     """
     Asserts a maximum value for a numeric column, ignoring missing values.
     
@@ -570,16 +586,14 @@ def assert_column_max(table_name, column_name, max, missing_val_coding=np.nan):
     ds = get_column_or_index(table_name, column_name)
     ds = strip_missing_values(ds, missing_val_coding)
     
-    try:
-        assert ds.max() <= max
-    except:
+    if not ds.max() <= maximum:
         msg = "Column '%s' has maximum value of %s, not %s" \
-                % (column_name, str(ds.max()), str(max))
+                % (column_name, str(ds.max()), str(maximum))
         raise OrcaAssertionError(msg)
     return
     
 
-def assert_column_min(table_name, column_name, min, missing_val_coding=np.nan):
+def assert_column_min(table_name, column_name, minimum, missing_val_coding=np.nan):
     """
     Asserts a minimum value for a numeric column, ignoring missing values.
     
@@ -589,7 +603,7 @@ def assert_column_min(table_name, column_name, min, missing_val_coding=np.nan):
     column_name : str
     minimum : int or float
     missing_val_coding : {np.nan, int, str}, optional
-        Value that indicates missing entires.
+        Value that indicates missing entries.
     
     Returns
     -------
@@ -600,11 +614,9 @@ def assert_column_min(table_name, column_name, min, missing_val_coding=np.nan):
     ds = get_column_or_index(table_name, column_name)
     ds = strip_missing_values(ds, missing_val_coding)
     
-    try:
-        assert ds.min() >= min
-    except:
+    if not ds.min() >= minimum:
         msg = "Column '%s' has minimum value of %s, not %s" \
-                % (column_name, str(ds.min()), str(min))
+                % (column_name, str(ds.min()), str(minimum))
         raise OrcaAssertionError(msg)
     return
 
@@ -636,9 +648,7 @@ def assert_column_max_portion_missing(table_name, column_name, portion, missing_
     missing_pct = int(round(100 * missing_portion))
     max_pct = int(round(100 * portion))
     
-    try:
-        assert missing_portion <= portion
-    except:
+    if not missing_portion <= portion:
         msg = "Column '%s' is %s%% missing, above limit of %s%%" \
                 % (column_name, missing_pct, max_pct)
         raise OrcaAssertionError(msg)
@@ -652,12 +662,50 @@ def assert_column_no_missing_values(table_name, column_name, missing_val_coding=
     return
 
 
+def assert_column_values_in(table_name, column_name, values,
+                            missing_val_coding=np.nan):
+    """
+    Asserts that the values in a specified column correspond to a given list
+    of acceptable values.
+    
+    Parameters
+    ----------
+    table_name : str
+    column_name : str
+    values : list or str
+        List of values or single value to check column against
+    missing_val_coding : {0, -1, np.nan}, optional
+        Value that indicates missing entries.
+    
+    Returns
+    -------
+    None
+    
+    """
+
+    assert_column_can_be_generated(table_name, column_name)
+    
+    ds = get_column_or_index(table_name, column_name)
+    if type(values) != list:
+        values = [values]
+    ds_child = get_column_or_index(table_name, column_name)
+    # strip missing values from dataset
+    ds = strip_missing_values(ds, missing_val_coding)
+    
+    # Identify values in ds that are not in values list
+    diff = np.setdiff1d(ds.values, values)
+    if len(diff) != 0:
+        msg = "Column {}.{} contains values that are not " \
+              "in the acceptable values list: {}".format(table_name, column_name, 
+                                                  str(values))
+        raise OrcaAssertionError(msg)
+    return
+
+
 def assert_injectable_is_registered(injectable_name):
     """
     """
-    try:
-        assert orca.is_injectable(injectable_name)
-    except:
+    if not orca.is_injectable(injectable_name):
         msg = "Injectable '%s' is not registered" % injectable_name
         raise OrcaAssertionError(msg)
     return
@@ -666,9 +714,7 @@ def assert_injectable_is_registered(injectable_name):
 def assert_injectable_not_registered(injectable_name):
     """
     """
-    try:
-        assert not orca.is_injectable(injectable_name)
-    except:
+    if orca.is_injectable(injectable_name):
         msg = "Injectable '%s' is already registered" % injectable_name
         raise OrcaAssertionError(msg)
     return
@@ -692,10 +738,11 @@ def assert_injectable_can_be_generated(injectable_name):
     """
     assert_injectable_is_registered(injectable_name)
     
-    if (orca.injectable_type(injectable_name) == 'function'):
+    if orca.injectable_type(injectable_name) == 'function':
         try:
             _ = orca.get_injectable(injectable_name)
         except:
+            # TODO: issues #3 log backtrace
             msg = "Injectable '%s' is registered but cannot be evaluated" % injectable_name
             raise OrcaAssertionError(msg)
     return
@@ -714,32 +761,32 @@ def assert_injectable_is_numeric(injectable_name):
     return
 
 
-def assert_injectable_greater_than(injectable_name, min):
+def assert_injectable_greater_than(injectable_name, minimum):
     """
     Asserts that a numeric injectable is greater than or equal to a minimum value.
     
     """
-    assert_injectable_is_numeric
+    assert_injectable_is_numeric(injectable_name)
     inj = orca.get_injectable(injectable_name)
     
-    if not inj >= min:
+    if not inj >= minimum:
         msg = "Injectable '%s' has value of %s, less than %s" \
-                % (injectable_name, str(inj), str(min))
+                % (injectable_name, str(inj), str(minimum))
         raise OrcaAssertionError(msg)
     return
     
 
-def assert_injectable_less_than(injectable_name, max):
+def assert_injectable_less_than(injectable_name, maximum):
     """
     Asserts that a numeric injectable is less than or equal to a maximum value.
     
     """
-    assert_injectable_is_numeric
+    assert_injectable_is_numeric(injectable_name)
     inj = orca.get_injectable(injectable_name)
     
-    if not inj <= max:
+    if not inj <= maximum:
         msg = "Injectable '%s' has value of %s, greater than %s" \
-                % (injectable_name, str(inj), str(max))
+                % (injectable_name, str(inj), str(maximum))
         raise OrcaAssertionError(msg)
     return
 
@@ -758,6 +805,3 @@ def assert_injectable_has_key(injectable_name, key):
         msg = "Injectable '%s' does not have key '%s'" % (injectable_name, key)
         raise OrcaAssertionError(msg)
     return
-
-
-
