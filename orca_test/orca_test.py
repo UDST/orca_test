@@ -362,7 +362,7 @@ def assert_column_can_be_generated(table_name, column_name):
 
 def assert_column_is_primary_key(table_name, column_name):
     """
-    Assert that column is the index of the underlying DataFrame, has no missing entires,
+    Assert that column is the index of the underlying DataFrame, has no missing entries,
     and its values are unique. 
     
     Parameters
@@ -521,7 +521,7 @@ def strip_missing_values(series, missing_val_coding=np.nan):
     Parameters
     ----------
     series : pandas.Series
-    missing_val_coding : {0, -1, np.nan}, optional
+    missing_val_coding : {np.nan, int, str}, optional
         Value that indicates missing entries.
     
     Returns
@@ -529,9 +529,11 @@ def strip_missing_values(series, missing_val_coding=np.nan):
     series : pandas.Series
     
     """
+    # For np.nan
     if np.isnan(missing_val_coding):
         return series.dropna()
     
+    # For int or str
     else:
         return series[series != missing_val_coding].copy()
 
@@ -544,8 +546,8 @@ def assert_column_missing_value_coding(table_name, column_name, missing_val_codi
     ----------
     table_name : str
     column_name : str
-    missing_val_coding : {0, -1}
-        Value that indicates missing entires.
+    missing_val_coding : {np.nan, int, str}
+        Value that indicates missing entries.
     
     Returns
     -------
@@ -572,8 +574,8 @@ def assert_column_max(table_name, column_name, maximum, missing_val_coding=np.na
     table_name : str
     column_name : str
     maximum : int or float
-    missing_val_coding : {0, -1, np.nan}, optional
-        Value that indicates missing entires.
+    missing_val_coding : {np.nan, int, str}, optional
+        Value that indicates missing entries.
     
     Returns
     -------
@@ -600,7 +602,7 @@ def assert_column_min(table_name, column_name, minimum, missing_val_coding=np.na
     table_name : str
     column_name : str
     minimum : int or float
-    missing_val_coding : {0, -1, np.nan}, optional
+    missing_val_coding : {np.nan, int, str}, optional
         Value that indicates missing entries.
     
     Returns
@@ -629,8 +631,8 @@ def assert_column_max_portion_missing(table_name, column_name, portion, missing_
     column_name : str
     portion : float from 0 to 1
         Maximum portion of entries that may be missing.
-    missing_val_coding : {0, -1, np.nan}, optional
-        Value that indicates missing entires.
+    missing_val_coding : {np.nan, int, str}, optional
+        Value that indicates missing entries.
     
     Returns
     -------
