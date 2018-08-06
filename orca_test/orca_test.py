@@ -530,7 +530,7 @@ def strip_missing_values(series, missing_val_coding=np.nan):
     
     """
     # For np.nan
-    if type(missing_val_coding) == 'float':
+    if np.isnan(missing_val_coding):
         return series.dropna()
     
     # For int or str
